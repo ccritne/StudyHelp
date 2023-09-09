@@ -1,7 +1,7 @@
 from setup import *
 from datetime import date, datetime, time, timedelta
 import copy
-from io import BytesIO as StringIO
+from io import BytesIO
 import PySimpleGUI as sg
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -134,7 +134,7 @@ def render_latex(formula, fontsize=12, dpi=300, format_='png'):
     """
     fig = plt.figure(figsize=(0.01, 0.01))
     fig.text(0, 0, u'${}$'.format(formula), fontsize=fontsize)
-    buffer_ = StringIO()
+    buffer_ = BytesIO()
     fig.savefig(buffer_, dpi=dpi, transparent=False, format=format_, bbox_inches='tight', pad_inches=0.0)
     plt.close(fig)
     return buffer_.getvalue()
@@ -173,7 +173,7 @@ def convert_to_bytes(file_or_bytes, resize=None):
         img = Image.open(file_or_bytes)
         if resize is not None:
             img = img.resize(resize)
-        with io.BytesIO() as bio:
+        with BytesIO() as bio:
             img.save(bio, format="PNG")
             del img
             return bio.getvalue()
