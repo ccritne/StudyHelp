@@ -1,5 +1,4 @@
 import sqlite3
-import datetime
 
 con = sqlite3.connect("datas.db")
 cursor = con.cursor()
