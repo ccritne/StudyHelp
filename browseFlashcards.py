@@ -5,66 +5,124 @@ from updateSource import updateSource
 from addCard import addCard
 from tkinter import *
 
-def updateFlashcardsInputs(window, front, back):
-    window['frontInput'].update(value=front)
-    window['backInput'].update(value=back)
+def updateFlashcardsInputs(window : sg.Window, front : str, back : str):
+    if len(getFlashcardsArray())>0:
+        window['flashcardInputs'].update(visible=True)
+        window['frontInput'].update(value=front)
+        window['backInput'].update(value=back)
+    else:
+        window['flashcardInputs'].update(visible=False)
+        window['frontInput'].update(value="")
+        window['backInput'].update(value="")
 
-def updateSelectedSource(window, row):
-    setRowSources(row)
-    setSelectedSourceID(getSourcesArray()[row][0])
-    window['tableSources'].update(select_rows=[row])
+def updateSelectedSource(window : sg.Window, row : int):
+
+    sourceID = None
+
+    if row is not None:
+        sourceID = getSourcesArray()[row][0]
+        window['tableSources'].update(select_rows=[row])
+    
+    setSelectedSourceID(sourceID)
+
     updateFlashcardsTable(window)
     updateSelectedFlashcards(window, 0)
+
+def updateFlashcardsTable(window : sg.Window):
+
+    sourceID = getSelectedSourceID()
+    
+    flashcardsArr = []
+
+    if sourceID is not None:
+        flashcardsArr = getFlashcardsForTable(sourceID)
+    
+    setFlashcardsArray(flashcardsArr)
+    
+    window['tableFlashcards'].update(values=flashcardsArr)
+
+def updateSourcesTable(window : sg.Window):
+
+    sourcesNames = allSourcesNames()
+
+    setSourcesArray(sourcesNames)
         
-def updateFlashcardsTable(window):
-    setFlashcardsArray(getFlashcards(getSelectedBookID()))
-    window['tableFlashcards'].update(values=getFlashcardsArray())
+    window['tableSources'].update(values=sourcesNames)
 
-def updateSourcesTable(window):
-    setSourcesArray(allSourcesNames())
-    window['tableSources'].update(values=getSourcesArray())
+def updateSelectedFlashcards(window : sg.Window, row : int):
+    
+    flashcardsArr = getFlashcardsArray()
 
-def updateSelectedFlashcards(window, row):
-    length = len(getFlashcardsArray())
+    front = str()
+    back = str()
 
-    setRowFlashcards(None)
-    setSelectedFlashcardID(None)
-    updateFlashcardsInputs(window=window, front="", back="")
+    slFlashcardID = None
+    
+    if flashcardsArr != []:
 
-    if length > 0:
-        newRow = row
-        if row > length and row is not None:
-            newRow = 0
+        if row > len(flashcardsArr):
+            row = 0
             
-        setRowFlashcards(newRow)
-        setSelectedFlashcardID(getFlashcardsArray()[newRow][0])
-        window['tableFlashcards'].update(select_rows=[newRow])
-        updateFlashcardsInputs(window=window, front=getFlashcardsArray()[newRow][1], back=getFlashcardsArray()[newRow][2])
+        slFlashcardID = flashcardsArr[row][0]
+        front = flashcardsArr[row][1]
+        back = flashcardsArr[row][2]
+        window['tableFlashcards'].update(select_rows=[row])
+        
+    setSelectedFlashcardID(slFlashcardID)
+    updateFlashcardsInputs(window=window, front=front, back=back)
             
 def updateTables(window):
 
     updateSourcesTable(window)
-    setSourcesArray(allSourcesNames())
+    
     updateSelectedSource(window, 0)
 
-    setFlashcardsArray(getFlashcards(getSelectedBookID()))    
-
-    setSelectedFlashcardID(None)
-    if len(getFlashcardsArray()) > 0:
-        updateSelectedFlashcards(window, 0)
+    updateSelectedFlashcards(window, 0)
 
 def browseFlashcards():
 
-    setSourcesArray(allSourcesNames())
-    setSelectedSourceID(getSourcesArray()[0][0])
+    condLayoutFlashcardsVisible = True
 
-    setFlashcardsArray(getFlashcards(getSelectedBookID()))    
-    setSelectedFlashcardID(getFlashcardsArray()[0][0])
+    sourcesNames = allSourcesNames()
 
+    setSelectedSourceID(None)
+    setRowSources(None)
+    setFlashcardsArray(None)
+    setSelectedFlashcardID(None)
+    setRowFlashcards(None)
+
+    if sourcesNames != []:
+        firstSourceID = sourcesNames[0][0]
+        setSelectedSourceID(firstSourceID)
+        setRowSources(0)
+
+        flashcardsArr = getFlashcardsForTable(firstSourceID)
+        setFlashcardsArray(flashcardsArr)
+
+        firstFlashcardID = None
+        rowFlashcard = None
+
+        if flashcardsArr != []:
+            firstFlashcardID = flashcardsArr[0][0]
+            rowFlashcard = 0
+        else:
+            condLayoutFlashcardsVisible = False
+        
+        setSelectedFlashcardID(firstFlashcardID)
+        setRowFlashcards(rowFlashcard)
+
+    else:
+        condLayoutFlashcardsVisible = False
+
+
+    setSourcesArray(sourcesNames)
+
+    flashcardsArr = getFlashcardsArray()
+    
     right_click_sources = ['Sources', ['Add source', 'Open source', 'Change file', 'Modify source', 'Delete source']]
 
     booksTable = sg.Table(
-                                values=getSourcesArray(), 
+                                values=sourcesNames if sourcesNames is not None else [[]], 
                                 headings=['ID', 'Name'], 
                                 key="tableSources",
                                 enable_click_events=True,
@@ -81,7 +139,7 @@ def browseFlashcards():
     right_click_flashcards = ['Flashcards', ['Add card', 'Delete card', 'Reschedule expired cards', 'Change box']]
 
     flashcardsTable = sg.Table(
-                                values=getFlashcardsArray(), 
+                                values=flashcardsArr if flashcardsArr is not None else [[]], 
                                 headings=['ID', 'Front', 'Back', 'Deadline', 'Box'], 
                                 key="tableFlashcards",
                                 justification='l',
@@ -102,6 +160,19 @@ def browseFlashcards():
         ['&Help', '&About...'],
     ]
 
+    frontDefaultText = ""
+    backDefaultText = ""
+    if flashcardsArr != []: 
+        frontDefaultText = flashcardsArr[0][1] 
+        backDefaultText = flashcardsArr[0][2]
+
+    flashcardInputs = [       
+                            [sg.Column([[sg.Button('Latex', key='addLatex')]], justification='right')],
+                            [sg.Text('Front'), sg.InputText(default_text=frontDefaultText, key='frontInput', expand_x=True, enable_events=True, size=(100, 1))],
+                            [sg.Text('Back'), sg.InputText(default_text=backDefaultText, key='backInput', expand_x=True, enable_events=True, size=(100, 1))],
+                            [sg.Button('Save', key="saveFlashcard"), sg.Button('View Scheme', key="viewScheme"), sg.Button('Preview', key="previewCard")],
+                    ]
+
     layout = [
         [
             [sg.Menu(menuBar)],
@@ -109,24 +180,11 @@ def browseFlashcards():
                 booksTable,
                 flashcardsTable
             ],
-            [
-                [sg.Column([[sg.Button('Latex', key='addLatex')]], justification='right')],
-                [sg.Text('Front'), sg.InputText(default_text=getFlashcardsArray()[0][1], key='frontInput', expand_x=True, enable_events=True)],
-                [sg.Text('Back'), sg.InputText(default_text=getFlashcardsArray()[0][2], key='backInput', expand_x=True, enable_events=True)],
-                [sg.Button('Save', key="saveFlashcard"), sg.Button('View Scheme', key="viewScheme"), sg.Button('Preview', key="previewCard")],
-            ]
+            [sg.Column(flashcardInputs, key='flashcardInputs', visible=condLayoutFlashcardsVisible)]
         ]
     ]
 
     window = sg.Window(title="Decks & Flashcards", layout=layout, modal=True, finalize=True)
-
-    window['frontInput'].bind("<Return>", "_Enter")
-    window['backInput'].bind("<Return>", "_Enter")
-    window['frontInput'].bind("<Button-1>", "_LClick")
-    window['backInput'].bind("<Button-1>", "_LClick")
-
-    window['tableSources'].update(select_rows=[0])
-    window['tableFlashcards'].update(select_rows=[0])
 
     while True:
         event, values = window.read()
@@ -136,13 +194,15 @@ def browseFlashcards():
         if event is not None:
             ### EVENTS FOR CLICK IN TABLES
 
-            if event[1] == '+CLICKED+' and (event[2][0] is not None and event[2][0] >=0):
+            if event[1] == '+CLICKED+' and (event[2][0] is not None and event[2][0] >=0) and getSourcesArray() is not None:
                 row = event[2][0]
 
                 match event[0]:
                     case "tableSources":
+                        setRowSources(row=row)
                         updateSelectedSource(window=window, row=row)
                     case "tableFlashcards":
+                        setRowFlashcards(row=row)
                         updateSelectedFlashcards(window=window, row=row)
 
             ###
@@ -157,8 +217,17 @@ def browseFlashcards():
             ### EVENTS FOR FLASHCARD CHANGES 
 
             if event in ["frontInput_Enter", "backInput_Enter", "saveFlashcard"]:
-                cursor.execute(f'''UPDATE flashcards SET front="{values['frontInput']}", back="{values['backInput']}", box=0, deadline="{datetime.now().strftime('%Y-%m-%d')}" WHERE ID={getSelectedFlashcardID()}''')
+                query = "UPDATE flashcards SET front = ?, back = ? WHERE ID = ?"
+                
+                front = values['frontInput']
+                back = values['backInput']
+                flashcardID = getSelectedFlashcardID()
+                
+                parameters = (front, back, flashcardID)
+
+                cursor.execute(query, parameters)
                 con.commit()
+
                 updateFlashcardsTable(window)
                 updateSelectedFlashcards(window, getRowFlashcards())
 
@@ -191,8 +260,6 @@ def browseFlashcards():
                     window[key].update(value=newText)
                     widget.icursor(cursor_pointer+7)
 
-                
-
             ###
 
             ### RIGHT CLICK MENU EVENTS
@@ -208,35 +275,35 @@ def browseFlashcards():
                 if event == "Add source":
                     updateSource()
                 if event == "Modify source":
-                    updateSource("modify", getSelectedBookID())
+                    updateSource("modify", getSelectedSourceID())
 
                 updateTables(window=window)
                 
             if event == "Delete source":
                 response = sg.popup_yes_no(f'Do you want to delete the source and his content?')
                 if response == 'Yes':
-                    cursor.execute(f'DELETE FROM sources WHERE ID={getSelectedBookID()}')
+                    cursor.execute(f'DELETE FROM sources WHERE ID={getSelectedSourceID()}')
                     con.commit()
-                    cursor.execute(f'DELETE FROM flashcards WHERE bookID={getSelectedBookID()}')
+                    cursor.execute(f'DELETE FROM flashcards WHERE sourceID={getSelectedSourceID()}')
                     con.commit()
                     
                     updateTables(window=window)
 
             if event == "Open source":
-                filename = cursor.execute(f'SELECT filename FROM books where ID={getSelectedBookID()}').fetchone()[0]
+                filename = cursor.execute(f'SELECT filename FROM books where ID={getSelectedSourceID()}').fetchone()[0]
                 if filename is not None:
                     import webbrowser
                     webbrowser.open_new(filename)
                 else:
                     filename = sg.popup_get_file('Please, select a file',  default_path="", title="File selector", file_types=(('Portable Document Format', 'PDF'),), keep_on_top=True, modal=True)
-                    cursor.execute(f'UPDATE books SET filename="{filename}" WHERE ID={getSelectedBookID()}')
+                    cursor.execute(f'UPDATE sources SET filename="{filename}" WHERE ID={getSelectedSourceID()}')
                     con.commit()
             
             if event == "Change file":
-                oldFilename = cursor.execute(f'SELECT filename FROM books where ID={getSelectedBookID()}').fetchone()[0]
+                oldFilename = cursor.execute(f'SELECT filename FROM books where ID={getSelectedSourceID()}').fetchone()[0]
                 filename = sg.popup_get_file('Please, select a file',  default_path=oldFilename,title="File selector", file_types=(('Portable Document Format', 'PDF'),), keep_on_top=True, modal=True)
                 if filename is not None:
-                    cursor.execute(f'UPDATE books SET filename="{filename}" WHERE ID={getSelectedBookID()}')
+                    cursor.execute(f'UPDATE sources SET filename="{filename}" WHERE ID={getSelectedSourceID()}')
                     con.commit()
 
             ## 
@@ -247,6 +314,13 @@ def browseFlashcards():
                 addCard()
                 updateFlashcardsTable(window)
                 updateSelectedFlashcards(window, len(getFlashcardsArray()) - 1)
+                if not condLayoutFlashcardsVisible:
+                    condLayoutFlashcardsVisible = True
+                    window['frontInput'].bind("<Return>", "_Enter")
+                    window['backInput'].bind("<Return>", "_Enter")
+                    window['frontInput'].bind("<Button-1>", "_LClick")
+                    window['backInput'].bind("<Button-1>", "_LClick")
+
             
             if event == "Delete card":
                 cursor.execute(f'DELETE FROM flashcards WHERE ID={getSelectedFlashcardID()}')

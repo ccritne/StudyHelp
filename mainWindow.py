@@ -1,6 +1,7 @@
 from functions import *
 from browseFlashcards import browseFlashcards
 from viewScheme import viewScheme
+from todayStudy import todayStudyFlashcards
 
 def makeMainWindow():
 
@@ -26,7 +27,6 @@ def makeMainWindow():
                     headings=["ID","Source Name", "Today"],
                     enable_events=True, 
                     hide_vertical_scroll=True,
-                    select_mode="extended",
                     justification="center",
                     key="studyDeck"
             )
@@ -39,18 +39,7 @@ def makeMainWindow():
         ]
     ]
 
-    studyLayout = [
-        [sg.Text('Front: '), sg.Text( key="front")],
-        [sg.Input(key='backTryInput')],
-        [sg.Text('Your try: ', visible=False, key="displayTextBackTryInput"), sg.Text(key="textBackTryInput", visible=False)],
-        [sg.Text('Solution: ', visible=False, key="displayTextSolution"), sg.Text(key="backSolution", visible=False)],
-        [sg.HorizontalSeparator()],
-        [sg.Button('No', key='backZero', visible=False), sg.Button('Yes', key='advanceBox', visible=False), sg.Button('Scheme', key='seeScheme', visible=False, button_color="Orange")],
-        [sg.Button('Back', key="EVENT_BACK_StudyLayout")],
-        [sg.Button('Solution', key="seeSolution", button_color="Green")],
-        [sg.Button('Home', key="EVENT_HOME_Today")],
 
-    ]
 
     DeadlinesLayout = [
         [
@@ -124,7 +113,6 @@ def makeMainWindow():
                     sg.Column(MenuLayout, visible=True, key='Menu', justification="center", vertical_alignment="center"), 
                     sg.Column(FlashcardsLayout, visible=False, key="Flashcards", justification="center"), 
                     sg.Column(decksLayout, visible=False, key="Deck", justification="center"),
-                    sg.Column(studyLayout, visible=False, key="Study", justification="center"),
                     sg.Column(DeadlinesLayout, visible=False, key="Deadlines", justification="center"), 
                     sg.Column(SettingsLayout, visible=False, key="Settings", justification="center"),
                     sg.Column(BooksLayout, visible=False, key="Books", justification="center"),
@@ -134,12 +122,12 @@ def makeMainWindow():
     
     window =  sg.Window(title="StudyHelp", layout=layout, size=(300, 400), finalize=True)
     
-    window['backTryInput'].bind("<Return>", "_Enter")
     window['selectedDate'].bind("<Return>", "_Enter")
+
 
     while True:
         event, values = window.read()
-        if event == "Exit" or event == sg.WIN_CLOSED:
+        if event in (sg.WIN_CLOSED, 'Exit'):
             break
         
         if event is not None:
@@ -176,28 +164,13 @@ def makeMainWindow():
             ### START BINDING DECKSLAYOUT EVENTS
 
             if event == 'startDecks':
-                playedBookIDs = []
-                for x in range(len(values['studyDeck'])):
-                    playedBookIDs.append(getTableDeck()[values['studyDeck'][x]][0])
-                
-                if len(playedBookIDs) > 0:
-                    setFlashcardsArray(getTodayFlashcardsSource(playedBookIDs))
-                if len(getFlashcardsArray()) > 0:
-                    setPlayedSourceID(getFlashcardsArray()[0][4])
-                    setPlayedFlashcardID(getFlashcardsArray()[0][0])
-                    window['backZero'].update(visible=False)
-                    window['advanceBox'].update(visible=False)
-                    window['displayTextBackTryInput'].update(visible=False)
-                    window['textBackTryInput'].update(visible=False)
-                    window['displayTextSolution'].update(visible=False)
-                    window['backTryInput'].update(visible=True)
-                    window['backTryInput'].update(value="")
-                    window['front'].update(value=getFlashcardsArray()[0][1])
-                    window['backSolution'].update(value=getFlashcardsArray()[0][2])
-                    window['backSolution'].update(visible=False)
-                    window['seeScheme'].update(visible=False)
+                playedSourceID = getTableDeck()[values['studyDeck'][0]][0]
+                setFlashcardsArray(getTodayFlashcardsSource(playedSourceID))
 
-                    FromTo('Deck', 'Study', window)
+                while len(getFlashcardsArray()) > 0:
+                    state = todayStudyFlashcards()
+                    if state == "EXIT":
+                        break
 
             ### END BINDING DECKSLAYOUT EVENTS
 
@@ -218,58 +191,7 @@ def makeMainWindow():
 
             ###
 
-            ### EVENTS FOR CHECK ANSWERS
-
-            if event in ["backTryInput_Enter", "seeSolution"]:
-                window['backTryInput'].update(visible=False)
-                window['displayTextBackTryInput'].update(visible=True)
-                window['displayTextSolution'].update(visible=True)
-                window['textBackTryInput'].update(visible=True)
-                window['textBackTryInput'].update(value=values['backTryInput'])
-                window['backSolution'].update(visible=True)
-                window['backZero'].update(visible=True)
-                window['advanceBox'].update(visible=True)
-                window['seeScheme'].update(visible=True)
-
-            if event in ['backZero', 'advanceBox']:
-
-                flashcardID = getFlashcardsArray()[0][0]
-
-                newBox = 0 
-                deadlineStr = datetime.now().strftime('%Y-%m-%d')
-                if event == 'advanceBox':
-                    deadlineStr = (datetime.now() + timedelta(days=pow(2, getFlashcardsArray()[0][3]))).strftime("%d-%m-%Y")
-                    newBox = getFlashcardsArray()[0][3] + 1
-                    setFlashcardsArray(getFlashcardsArray().pop(0))
-                else:
-                    retry = getFlashcardsArray().pop(0)
-                    setFlashcardsArray(getFlashcardsArray().append(retry))
-                
-                # I update newBox after the determination of deadline because 
-                # the second rep is after 1 day not after 2 days.
-
-                cursor.execute(f'''UPDATE flashcards SET deadline="{deadlineStr}", box={newBox} WHERE ID={flashcardID}''')
-                con.commit()
-
-                if len(getFlashcardsArray()) > 0:
-                    window['backZero'].update(visible=False)
-                    window['advanceBox'].update(visible=False)
-                    window['displayTextBackTryInput'].update(visible=False)
-                    window['textBackTryInput'].update(visible=False)
-                    window['displayTextSolution'].update(visible=False)
-                    window['backTryInput'].update(visible=True)
-                    window['backTryInput'].update(value="")
-                    window['front'].update(value=getFlashcardsArray()[0][1])
-                    window['backSolution'].update(value=getFlashcardsArray()[0][2])
-                    window['backSolution'].update(visible=False)
-                    window['seeScheme'].update(visible=False)
-                else:
-                    setTableDeck(getInfoDecks())
-                    window['studyDeck'].update(values=getTableDeck())
-
-                    FromTo('Study', 'Deck', window)
-
-            ###
+            
 
             ### MENU BUTTONS EVENT
 

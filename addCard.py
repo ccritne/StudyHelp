@@ -1,5 +1,4 @@
 from functions import *
-from addScheme import addScheme
 from tkinter import *
 
 def addCard():
@@ -53,19 +52,15 @@ def addCard():
                 textBack = values['backInput'] 
                 box = 0
                 deadline = datetime.now().strftime('%Y-%m-%d')
-                bookID = getSelectedBookID()
+                sourceID = getSelectedSourceID()
                 filenameScheme = values['filenameScheme']
 
-                query = "INSERT INTO flashcards(front, back, box, deadline, bookID, filenameScheme) VALUES (?, ?, ?, ?, ?, ?)"
+                query = "INSERT INTO flashcards(front, back, box, deadline, sourceID, filenameScheme) VALUES (?, ?, ?, ?, ?, ?)"
 
-                parameters = (textFront, textBack, box, deadline, bookID, filenameScheme)
+                parameters = (textFront, textBack, box, deadline, sourceID, filenameScheme)
 
                 cursor.execute(query, parameters)
                 con.commit()
                 break
-
-            if event == "loadScheme":
-                addScheme()
-                window['loadScheme'].update(text='Change scheme')
 
     window.close()

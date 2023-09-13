@@ -7,39 +7,41 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import re
 import ast
+import textwrap
+import base64
 
-def changePreviousPage(oldPage):
+def changePreviousPage(oldPage : str):
     global previousPage
     previousPage = oldPage
 
-def getPreviousPage():
+def getPreviousPage() -> str:
     global previousPage
     return previousPage
 
-def changeActualPage(newPage):
+def changeActualPage(newPage : str):
     global actualPage
     actualPage = newPage
 
-def getActualPage():
+def getActualPage() -> str:
     global actualPage
     return actualPage
 
-def FromTo(str_from, str_to, window):
+def FromTo(str_from : str, str_to : str, window : sg.Window):
     window[str_from].update(visible=False)
     window[str_to].update(visible=True)
     changePreviousPage(str_from)
     changeActualPage(str_to)
 
 def calculateDeadline(
-        arrSessionWeek, 
-        totalPages, 
-        studiedPages
-        ):
+        arrSessionWeek : list, 
+        totalPages : int, 
+        studiedPages : int
+        ) -> str:
 
     todayDate = datetime.now()
     todayIndex = todayDate.weekday()
 
-    deadline = copy(todayDate)
+    deadline : datetime = copy.copy(todayDate) 
     remainingPages = totalPages - studiedPages
 
     daysToAdd = 0
@@ -81,21 +83,29 @@ def calculateDeadline(
 
     return deadline.strftime('%d-%m-%Y')    
 
-def allSourcesNames():
+def allSourcesNames() -> list:
     cursor.execute('SELECT DISTINCT id, name FROM sources')
-    return cursor.fetchall()
+    result = cursor.fetchall()
+    
+    return result
 
-def getFlashcards(sourceID):
+def getFlashcardsForTable(sourceID : int) -> list:
     cursor.execute(f'SELECT ID, front, back, deadline, box FROM flashcards WHERE sourceID = {sourceID}')
-    return cursor.fetchall()
+    result = cursor.fetchall()
+    
+    return result
 
-def getTodayFlashcardsSource(sourceIDs):
+def getTodayFlashcardsSource(sourceID : int) -> list:
     todayStr = datetime.now().strftime('%Y-%m-%d')
-    query = f"""SELECT ID, front, back, box, sourceID FROM flashcards WHERE deadline='{todayStr}' AND sourceID in {tuple(sourceIDs) if len(sourceIDs) > 1 else "("+str(sourceIDs[0])+")"}"""
-    cursor.execute(query)
-    return cursor.fetchall()
+    query = "SELECT ID, front, back, box, sourceID FROM flashcards WHERE deadline = ? AND sourceID = ? "
+    parameters = (todayStr, sourceID)
+    cursor.execute(query, parameters)
 
-def getInfoDecks():
+    result = cursor.fetchall()
+    
+    return result
+
+def getInfoDecks() -> list:
     
     todayStr = datetime.now().strftime('%Y-%m-%d')
     cursor.execute(f'''SELECT sources.ID,
@@ -108,28 +118,31 @@ def getInfoDecks():
                         ''')
     
     array = cursor.fetchall()
-    id = array[0][0]
-    tableInfo = [[id, array[0][1], 0]]
-    index = 0
-    for x in range(len(array)):
-        if array[x][0] != id: # Sort fetch
-            id = array[x][0]
-            tableInfo.append([id, array[x][1], 0])
-            index += 1
-        
-        if array[x][2] == todayStr:
-            tableInfo[index][2] += 1
-
+    if array != []:
+        id = array[0][0]
+        tableInfo = [[id, array[0][1], 0]]
+        index = 0
+        for x in range(len(array)):
+            if array[x][0] != id: # Sort fetch
+                id = array[x][0]
+                tableInfo.append([id, array[x][1], 0])
+                index += 1
             
-    return tableInfo
+            if array[x][2] == todayStr:
+                tableInfo[index][2] += 1
 
-def getSettingsValue(value):
+                
+        return tableInfo
 
-        cursor.execute('SELECT '+value+' FROM settings')
-        
-        return cursor.fetchone()[0]
+    return [[]]
 
-def render_latex(formula, fontsize=12, dpi=300, format_='png'):
+def getSettingsValue(value : str) -> str | int:
+
+    cursor.execute('SELECT '+value+' FROM settings')
+    
+    return cursor.fetchone()[0]
+
+def render_latex(formula : str, fontsize : int = 12, dpi : int = 300, format_ : str='png') -> bytes:
     """Renders LaTeX formula into image.
     """
     fig = plt.figure(figsize=(0.01, 0.01))
@@ -139,84 +152,87 @@ def render_latex(formula, fontsize=12, dpi=300, format_='png'):
     plt.close(fig)
     return buffer_.getvalue()
 
-def setSelectedSourceID(id):
+def setSelectedSourceID(id : int | None):
     global selectedSourceID
     selectedSourceID = id
 
-def getSelectedBookID():
+def getSelectedSourceID() -> int | None:
     global selectedSourceID
     return selectedSourceID
 
-def setSelectedFlashcardID(id):
+def setSelectedFlashcardID(id : int | None):
     global selectedFlashcardID
     selectedFlashcardID = id
 
-def getSelectedFlashcardID():
+def getSelectedFlashcardID() -> int | None:
 
     global selectedFlashcardID
     return selectedFlashcardID
 
-def setPlayedSourceID(id):
+def setPlayedSourceID(id : int | None):
     global playedSourceID
     playedSourceID = id
 
-def getPlayedSourceID():
+def getPlayedSourceID() -> int | None:
     global playedSourceID
     return playedSourceID
 
-def setPlayedFlashcardID(id):
+def setPlayedFlashcardID(id : int | None):
     global playedFlashcardID
-    playedFlashcardID = copy.deepcopy(id)
+    playedFlashcardID = id
 
-def convert_to_bytes(file_or_bytes, resize=None):
+def convert_to_bytes(file_or_bytes, resize=None) -> bytes:
     if file_or_bytes is not None:
-        img = Image.open(file_or_bytes)
-        if resize is not None:
-            img = img.resize(resize)
-        with BytesIO() as bio:
-            img.save(bio, format="PNG")
-            del img
-            return bio.getvalue()
+        try:
+            img = Image.open(file_or_bytes)
+            if resize is not None:
+                img = img.resize(resize)
+            with BytesIO() as bio:
+                img.save(bio, format="PNG")
+                del img
+                return bio.getvalue()
+        except:
+            return None
     else:
         return None
     
-def getPlayedFlashcardID():
+def getPlayedFlashcardID() -> int | None:
     global playedFlashcardID
     return playedFlashcardID
 
-def getSourceValues(bookID):
+def getSourceValues(bookID : int) -> tuple:
     cursor.execute(f'SELECT * FROM sources WHERE ID={bookID}')
     
     return cursor.fetchone()
 
-def getFlashcardsArray():
+def getFlashcardsArray() -> list:
     global flashcardsArray
     return flashcardsArray
 
-def setFlashcardsArray(fArray):
+def setFlashcardsArray(fArray : list):
     global flashcardsArray
-    flashcardsArray = fArray[:]
+    flashcardsArray = copy.copy(fArray)
 
-def checkStrIntInput(str):
+def checkStrIntInput(str) -> bool:
     regexp = re.compile('[^0-9]')
     if regexp.search(str) or len(str) == 0:
         return False
     
     return True
 
-def setSourcesArray(bArray):
+def setSourcesArray(bArray : list):
     global sourcesArray
     sourcesArray = copy.copy(bArray)
 
-def getSourcesArray():
+def getSourcesArray() -> list:
     global sourcesArray
     return sourcesArray
 
-def setTableDeck(tDeck):
+def setTableDeck(tDeck : list):
     global tableDeck
     tableDeck = copy.copy(tDeck)
 
-def getTableDeck():
+def getTableDeck() -> list:
     global tableDeck
     return tableDeck 
 
@@ -236,48 +252,103 @@ def getTotalMinutes(indexDay, exceptID=None):
 
     return totalMinutes
 
-def setRowSources(row):
+def setRowSources(row : int):
     global rowSources
     rowSources = row
 
-def getRowSources():
+def getRowSources() -> int:
     global rowSources
     return rowSources
 
-def setRowFlashcards(row):
+def setRowFlashcards(row : int):
     global rowFlashcards
-    rowFlashcards = copy.copy(row)
+    rowFlashcards = row
 
-def getRowFlashcards():
+def getRowFlashcards() -> int:
     global rowFlashcards
     return rowFlashcards
 
-def setFrontInputSelected(value):
+def setFrontInputSelected(value : bool):
     global frontInputSelected
-    frontInputSelected = copy.copy(value)
+    frontInputSelected = value
 
-def getFrontInputSelected():
+def getFrontInputSelected() -> bool:
     global frontInputSelected
     return frontInputSelected
 
-def setBackInputSelected(value):
+def setBackInputSelected(value : bool):
     global backInputSelected
-    backInputSelected = copy.copy(value)
+    backInputSelected = value
 
-def getBackInputSelected():
+def getBackInputSelected() -> bool | None:
     global backInputSelected
     return backInputSelected
 
-def setSelectedDate(date):
+def setSelectedDate(date : datetime):
     global selectedDate
     selectedDate = copy.copy(date)
 
-def getSelectedDate() -> datetime:
+def getSelectedDate() -> datetime | None:
     global selectedDate
     return selectedDate
 
-def getStringDate(date):
+def getStringDate(date : datetime) ->  str:
     return date.strftime('%Y-%m-%d')
 
-def getStringDateWithTime(date):
+def getStringDateWithTime(date : datetime) -> str:
     return date.strftime('%Y-%m-%d %H:%M')
+
+def setFrontLayout(frontLy: list):
+    global frontLayout
+    frontLayout = copy.deepcopy(frontLy)
+
+def setBackLayout(backLy: list):
+    global backLayout
+    backLayout = copy.deepcopy(backLy)
+
+def getFrontLayout() -> list:
+    global frontLayout
+    return frontLayout
+
+def getBackLayout() -> list:
+    global backLayout
+    return backLayout
+
+def fromTextToElements(text : str):
+    elements = []
+
+    startLatex = False
+    stringLatex = ""
+    normalString = ""
+
+    x = 0
+    while x < len(text):
+
+        if x + 6 < len(text) and text[x:x+7] == '[latex]':
+            if len(normalString)> 0 :
+                elements.append([sg.Text(text=textwrap.fill(normalString), expand_x=True)])
+            normalString = ""
+            startLatex = True
+            x += 7
+
+        if x + 7 < len(text) and text[x:x+8] == '[/latex]':
+
+            if len(stringLatex)> 0 : 
+                image_bytes = render_latex(stringLatex)
+                image_base64 = base64.b64encode(image_bytes)
+                elements.append([sg.Column([[sg.Image(source=image_base64)]])])
+            startLatex = False
+            stringLatex = ""
+            x += 8
+
+        if x < len(text):
+            if startLatex:
+                stringLatex += text[x]
+            else:
+                normalString += text[x]
+            x += 1
+
+    if len(normalString)> 0:
+        elements.append([sg.Text(textwrap.fill(normalString), expand_x=True)])
+    
+    return elements

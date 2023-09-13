@@ -29,10 +29,10 @@ def updateSource(command="NEW", sourceID=None):
     isBook = True
     isVideo = False
 
-    query = 'INSERT INTO SOURCE(name, numberPages, studiedPages, filename, arrSessions, deadline, url, durationMinutes, viewedMinutes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    query = 'INSERT INTO sources(name, numberPages, studiedPages, filename, arrSessions, deadline, insertDate) VALUES (?, ?, ?, ?, ?, ?, ?)'
 
     if command == "modify":
-        sourceValues = getSourceValues(getSelectedBookID())
+        sourceValues = getSourceValues(getSelectedSourceID())
         studySlotsInfo = ast.literal_eval(sourceValues[6])
         oldSessions = []
         for x in weekdays:
@@ -45,7 +45,13 @@ def updateSource(command="NEW", sourceID=None):
         isVideo = not isBook
 
         sessions = copy.copy(oldSessions)
-        query = 'UPDATE sources SET name = ?, numberPages = ?, studiedPages = ?, filename = ?, arrSessions = ?, deadline = ?, url = ?, durationMinutes = ?, viewedMinutes = ? WHERE ID = ?'
+        
+        
+        query = 'UPDATE sources SET name = ?, numberPages = ?, studiedPages = ?, filename = ?, arrSessions = ?, deadline = ? WHERE ID = ?'
+        
+        if not isBook:
+            query = 'UPDATE sources SET name = ?, arrSessions = ?, deadline = ?, url = ?, durationMinutes = ?, viewedMinutes = ? WHERE ID = ?'
+
         buttonText = "MODIFY"
         windowTitle = "MODIFY BOOK"
 
@@ -75,10 +81,10 @@ def updateSource(command="NEW", sourceID=None):
         [sg.Text('Number of studied pages ', size=(20, 1), visible=isBook, key="textStudiedPages"), sg.Input(key='entryStudiedPages', default_text=sourceValues[3], justification="center", size=(4, 1), enable_events=True, visible=isBook)],
         [sg.Text('Minutes of see view ', size=(20, 1), visible=isVideo, key="textMinutesViewed"), sg.Input(key='viewedMinutes', tooltip="Duration in minutes", default_text=sourceValues[7], justification="center", size=(5, 1), enable_events=True, visible=isVideo)],
         
-        [sg.Text('Document ', size=(20, 1)), sg.Input(key="pathBook", size=(10, 1), default_text=sourceValues[4]), sg.FileBrowse(file_types=(('Portable Document Format', 'PDF'),), visible=isBook)],
+        [sg.Text('Document ', size=(20, 1)), sg.Input(key="pathSource", size=(10, 1), default_text=sourceValues[4]), sg.FileBrowse(file_types=(('Portable Document Format', 'PDF'),), visible=isBook)],
         [sg.Text('Url ', size=(20, 1), visible=isVideo, key="urlVideo"), sg.Input(key="pathVideo", size=(30, 1), expand_x=True, default_text=sourceValues[4], visible=isVideo)],
         
-        [sg.Text('Deadline ', size=(20, 1)), sg.Input(key="previewDeadline", size=(13, 1), default_text=sourceValues[5]), sg.CalendarButton('Select here!', format='%Y-%m-%d')],
+        [sg.Text('Deadline ', size=(20, 1)), sg.Input(key="previewDeadline", size=(13, 1), default_text=sourceValues[5], readonly=True)],
         [sg.Button(buttonText, key="updateSource", expand_x=True)]
     ]
 
@@ -139,36 +145,40 @@ def updateSource(command="NEW", sourceID=None):
             
             if event == "updateSource":
 
+                isTextSource = values['textSource']
+
                 numberPagesStr = values['numberPages']
-                studiedPagesStr = values['studiedPages']
+                studiedPagesStr = values['entryStudiedPages']
 
                 nameBook = values['nameDeck']
                 filename = values['pathSource']
 
-                if (type == True and checkStrIntInput(numberPagesStr) and checkStrIntInput(studiedPagesStr)) or \
-                      (type == False and checkStrIntInput(numberPagesStr) and checkStrIntInput(studiedPagesStr)):
+                if checkStrIntInput(numberPagesStr) and checkStrIntInput(studiedPagesStr):
 
                     numberPages = int(numberPagesStr)
                     studiedPages = int(studiedPagesStr)
 
-                    url = window['entryStudiedPages']
-                    pathVideo = window['entryStudiedPages']
 
-                    viewedMinutes = window['viewedMinutes']
-                    durationMinutes = window['durationMinutes']
+                    if not isTextSource:
+                        url = window['entryStudiedPages']
+                        pathVideo = window['entryStudiedPages']
+
+                        viewedMinutes = int(window['viewedMinutes'])
+                        durationMinutes = int(window['durationMinutes'])
 
                     if numberPages > 0 and studiedPages >= 0:
                         if studySlotsInfo is not None:
                             
                             deadline = calculateDeadline(arrSessionWeek=studySlotsInfo, totalPages=numberPages, studiedPages=studiedPages)
 
+                            parameters = (nameBook, numberPages, studiedPages, filename, str(studySlotsInfo), deadline, datetime.now())
                             
-
-                            parameters = (nameBook, numberPages, studiedPages, filename, str(studySlotsInfo), deadline, url, durationMinutes, viewedMinutes)
+                            if not isTextSource:
+                                parameters = (nameBook, str(studySlotsInfo), deadline, url, durationMinutes, viewedMinutes)
 
                             if command == 'modify':
                                 parameters = parameters + (sourceID, )
-
+                                                        
                             cursor.execute(query, parameters)
                             con.commit()
                             break

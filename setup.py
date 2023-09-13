@@ -28,3 +28,7 @@ weekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
 weekdays_complete = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 selectedDate = None
+
+
+frontLayout = [[]]
+backLayout = [[]]
