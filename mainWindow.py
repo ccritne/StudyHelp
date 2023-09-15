@@ -65,7 +65,8 @@ def makeMainWindow():
 
     SettingsLayout = [
                 [sg.Text('Max study hour', size=(15, 1)), sg.Input(default_text=getSettingsValue('maxStudyHour'), key='maxStudyHour', size=(5, 1))],
-                [sg.Text('Hour for Notification', size=(15, 1)), sg.Combo([x for x in range(24)], key='defaultHourNotification', default_value=getSettingsValue('defaultHourNotification'), size=(5,1))],
+                [sg.Text('Hour for Notification', size=(15, 1)), sg.Combo([x for x in range(8, 24)], key='defaultHourNotification', default_value=getSettingsValue('defaultHourNotification'), size=(5,1))],
+                [sg.Text('Max subjects for day', size=(15, 1)), sg.Combo([x for x in range(1, 4)], key='maxSubjectsDay', default_value=getSettingsValue('maxSubjectsDay'), size=(5,1))],
                 [sg.Text('Days ')],
                 [sg.Checkbox(text='Mon', size=(6, 1), key='monSettings', default=bool(int(studyDays[0]))), sg.Checkbox(text='Fri', size=(6, 1), key='friSettings', default=bool(int(studyDays[4])))],
                 [sg.Checkbox(text='Tue', size=(6, 1), key='tueSettings', default=bool(int(studyDays[1]))), sg.Checkbox(text='Sat', size=(6, 1), key='satSettings', default=bool(int(studyDays[5])))],
@@ -165,10 +166,16 @@ def makeMainWindow():
 
             if event == 'startDecks':
                 playedSourceID = getTableDeck()[values['studyDeck'][0]][0]
-                setFlashcardsArray(getTodayFlashcardsSource(playedSourceID))
 
+
+                setFlashcardsArray(getTodayFlashcardsSource(playedSourceID))
+                
+                print('OUT - len(FlashcardsArray)', len(getFlashcardsArray()))
+                
                 while len(getFlashcardsArray()) > 0:
                     state = todayStudyFlashcards()
+                    print('IN - len(FlashcardsArray)', len(getFlashcardsArray()))
+
                     if state == "EXIT":
                         break
 
@@ -200,6 +207,7 @@ def makeMainWindow():
                 if "Settings" in event:
                     maxStudyHour = int(values['maxStudyHour'])
                     defaultHourNotification = int(values['defaultHourNotification'])
+                    maxSubjectsDay = int(values['maxSubjectsDay'])
 
                     studyDays = "".join([str(int(window['monSettings'].get())),
                                         str(int(window['tueSettings'].get())),
@@ -210,9 +218,10 @@ def makeMainWindow():
                                         str(int(window['sunSettings'].get()))])
                     query = '''UPDATE settings SET  maxStudyHour= ? , 
                                                     defaultHourNotification = ?, 
-                                                    studyDays = ?'''
+                                                    studyDays = ?,
+                                                    maxSubjectsDay = ?'''
 
-                    parameters = (maxStudyHour, defaultHourNotification, studyDays) 
+                    parameters = (maxStudyHour, defaultHourNotification, studyDays, maxSubjectsDay) 
 
                     cursor.execute(query, parameters)
                     con.commit()

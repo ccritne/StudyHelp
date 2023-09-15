@@ -1,6 +1,6 @@
 from functions import *
 
-def previewCard(textFront, textBack):
+def previewCard(textFront : str, textBack : str):
 
     elementsFront = fromTextToElements(textFront)
     elementsBack = fromTextToElements(textBack)

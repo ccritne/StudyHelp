@@ -33,55 +33,76 @@ def FromTo(str_from : str, str_to : str, window : sg.Window):
     changeActualPage(str_to)
 
 def calculateDeadline(
-        arrSessionWeek : list, 
-        totalPages : int, 
-        studiedPages : int
+        arrSessionWeek : list,
+        isBook : bool = True,
+        isVideo: bool = False,
+        totalPages : int | None = 0, 
+        studiedPages : int | None = 0,
+        totalMinutes : int | None = 0, 
+        viewedMinutes : int | None = 0,  
         ) -> str:
 
     todayDate = datetime.now()
     todayIndex = todayDate.weekday()
 
     deadline : datetime = copy.copy(todayDate) 
-    remainingPages = totalPages - studiedPages
+    remaining = 0
+    
+    indexStr = ''
+
+    if isVideo:
+        remaining = totalMinutes - viewedMinutes
+        indexStr = 'totalDuration'
+
+    if isBook:
+        remaining = totalPages - studiedPages
+        indexStr = 'totalPages'
 
     daysToAdd = 0
 
     while todayIndex < 7:
-
-        if arrSessionWeek[weekdays[todayIndex]]['isStudyDay']:
-            remainingPages -= min(arrSessionWeek[weekdays[todayIndex]]['totalPages'], remainingPages)
+        if arrSessionWeek[weekdays[todayIndex]]['isStudyDay'] and arrSessionWeek[weekdays[todayIndex]]['areThereSessions']:
+            remaining -= min(arrSessionWeek[weekdays[todayIndex]][indexStr], remaining)
         
         todayIndex += 1
-        if remainingPages > 0:
+        if remaining > 0:
             daysToAdd += 1
 
     deadline += timedelta(days=daysToAdd)
+    
 
-    weekPages = arrSessionWeek['totalPages']
-    weeksAdd = (int(remainingPages/weekPages) - 1)
+    
+    weekDo = arrSessionWeek[indexStr]
+
+    weeksAdd = int(remaining/weekDo)
+
+    if weeksAdd > 0:
+        weeksAdd -= 1
+
     daysAdd = weeksAdd*7
-    remainingPages -= (weekPages* weeksAdd)
+    remaining -= (weekDo * weeksAdd)
     deadline += timedelta(days = daysAdd)
 
+    
     todayIndex = 0
 
     daysToAdd = 0
-    while remainingPages > 0:
+    while remaining > 0:
 
-        if arrSessionWeek[weekdays[todayIndex]]['isStudyDay']:
-            remainingPages -= min(arrSessionWeek[weekdays[todayIndex]]['totalPages'], remainingPages)
+        if arrSessionWeek[weekdays[todayIndex]]['isStudyDay'] and arrSessionWeek[weekdays[todayIndex]]['areThereSessions']:
+            remaining -= min(arrSessionWeek[weekdays[todayIndex]][indexStr], remaining)
         
         if todayIndex < 6:
             todayIndex += 1
         else:
             todayIndex = 0
 
-        if remainingPages > 0:
+        if remaining > 0:
             daysToAdd += 1
 
     deadline += timedelta(days=daysToAdd)
 
-    return deadline.strftime('%d-%m-%Y')    
+    return deadline.strftime('%Y-%m-%d')    
 
 def allSourcesNames() -> list:
     cursor.execute('SELECT DISTINCT id, name FROM sources')
@@ -200,14 +221,22 @@ def getPlayedFlashcardID() -> int | None:
     global playedFlashcardID
     return playedFlashcardID
 
-def getSourceValues(bookID : int) -> tuple:
-    cursor.execute(f'SELECT * FROM sources WHERE ID={bookID}')
+def getSourceValues(sourceID : int) -> tuple:
+    cursor.execute(f'SELECT * FROM sources WHERE ID={sourceID}')
     
     return cursor.fetchone()
 
 def getFlashcardsArray() -> list:
     global flashcardsArray
     return flashcardsArray
+
+def appendFlashcard(flashcard : tuple):
+    global flashcardsArray
+    flashcardsArray.append(flashcard)
+
+def removeFlashcard(index : int):
+    global flashcardsArray
+    flashcardsArray.pop(index)
 
 def setFlashcardsArray(fArray : list):
     global flashcardsArray
@@ -352,3 +381,10 @@ def fromTextToElements(text : str):
         elements.append([sg.Text(textwrap.fill(normalString), expand_x=True)])
     
     return elements
+
+def fromNumberToTime(number : int) -> str:
+    if number < 10:
+        return "0"+str(number)
+    
+    return str(number)
+    

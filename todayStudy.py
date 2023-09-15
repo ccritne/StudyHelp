@@ -1,10 +1,10 @@
 from functions import *
+from viewScheme import viewScheme
 
 def todayStudyFlashcards() -> str:
 
     state = "OK"
 
-    print(getFlashcardsArray()[0])
     frontText : list = copy.copy(getFlashcardsArray()[0][1])
     backText : list = copy.copy(getFlashcardsArray()[0][2])
 
@@ -35,6 +35,10 @@ def todayStudyFlashcards() -> str:
             break
         
         if event is not None:
+            if event == "seeScheme":
+                flashcardID = getFlashcardsArray()[0][0] 
+                viewScheme(flashcardID)
+
             if event in ["backTryInput_Enter", "seeSolution"]:
                 window['backTryInput'].update(visible=False)
                 window['displayTextBackTryInput'].update(visible=True)
@@ -57,10 +61,11 @@ def todayStudyFlashcards() -> str:
                 if event == 'advanceBox':
                     deadlineStr = (datetime.now() + timedelta(days=pow(2, getFlashcardsArray()[0][3]))).strftime("%d-%m-%Y")
                     newBox = getFlashcardsArray()[0][3] + 1
-                    setFlashcardsArray(getFlashcardsArray().pop(0))
+                    removeFlashcard(0)
                 else:
-                    retry = getFlashcardsArray().pop(0)
-                    setFlashcardsArray(getFlashcardsArray().append(retry))
+                    retry = getFlashcardsArray()[0]
+                    removeFlashcard(0)
+                    appendFlashcard(retry)
                 
                 # I update newBox after the determination of deadline because 
                 # the second rep is after 1 day not after 2 days.

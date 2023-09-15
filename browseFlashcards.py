@@ -121,7 +121,7 @@ def browseFlashcards():
     
     right_click_sources = ['Sources', ['Add source', 'Open source', 'Change file', 'Modify source', 'Delete source']]
 
-    booksTable = sg.Table(
+    sourcesTable = sg.Table(
                                 values=sourcesNames if sourcesNames is not None else [[]], 
                                 headings=['ID', 'Name'], 
                                 key="tableSources",
@@ -153,6 +153,8 @@ def browseFlashcards():
                                 right_click_menu=right_click_flashcards
                             )
 
+
+
     menuBar = [
         ['File', 'Exit'],
         right_click_sources,
@@ -177,7 +179,7 @@ def browseFlashcards():
         [
             [sg.Menu(menuBar)],
             [
-                booksTable,
+                sourcesTable,
                 flashcardsTable
             ],
             [sg.Column(flashcardInputs, key='flashcardInputs', visible=condLayoutFlashcardsVisible)]
@@ -185,6 +187,13 @@ def browseFlashcards():
     ]
 
     window = sg.Window(title="Decks & Flashcards", layout=layout, modal=True, finalize=True)
+    
+    if len(sourcesNames) > 0:
+        setRowSources(row=0)
+        updateSelectedSource(window=window, row=0)
+    if len(flashcardsArr) > 0:
+        setRowFlashcards(row=0)
+        updateSelectedFlashcards(window=window, row=0)
 
     while True:
         event, values = window.read()
@@ -275,7 +284,7 @@ def browseFlashcards():
                 if event == "Add source":
                     updateSource()
                 if event == "Modify source":
-                    updateSource("modify", getSelectedSourceID())
+                    updateSource("MODIFY")
 
                 updateTables(window=window)
                 
@@ -290,19 +299,19 @@ def browseFlashcards():
                     updateTables(window=window)
 
             if event == "Open source":
-                filename = cursor.execute(f'SELECT filename FROM books where ID={getSelectedSourceID()}').fetchone()[0]
-                if filename is not None:
-                    import webbrowser
-                    webbrowser.open_new(filename)
-                else:
+                filename = cursor.execute(f'SELECT filename FROM sources where ID={getSelectedSourceID()}').fetchone()[0]
+                if filename in [None, ""]:
                     filename = sg.popup_get_file('Please, select a file',  default_path="", title="File selector", file_types=(('Portable Document Format', 'PDF'),), keep_on_top=True, modal=True)
                     cursor.execute(f'UPDATE sources SET filename="{filename}" WHERE ID={getSelectedSourceID()}')
                     con.commit()
+                else:
+                    import webbrowser
+                    webbrowser.open_new(filename)
             
             if event == "Change file":
-                oldFilename = cursor.execute(f'SELECT filename FROM books where ID={getSelectedSourceID()}').fetchone()[0]
+                oldFilename = cursor.execute(f'SELECT filename FROM sources where ID={getSelectedSourceID()}').fetchone()[0]
                 filename = sg.popup_get_file('Please, select a file',  default_path=oldFilename,title="File selector", file_types=(('Portable Document Format', 'PDF'),), keep_on_top=True, modal=True)
-                if filename is not None:
+                if filename not in [None, ""]:
                     cursor.execute(f'UPDATE sources SET filename="{filename}" WHERE ID={getSelectedSourceID()}')
                     con.commit()
 
@@ -314,6 +323,7 @@ def browseFlashcards():
                 addCard()
                 updateFlashcardsTable(window)
                 updateSelectedFlashcards(window, len(getFlashcardsArray()) - 1)
+                window['tableFlashcards'].Widget.see(len(getFlashcardsArray()))
                 if not condLayoutFlashcardsVisible:
                     condLayoutFlashcardsVisible = True
                     window['frontInput'].bind("<Return>", "_Enter")
@@ -327,6 +337,7 @@ def browseFlashcards():
                 con.commit()
                 updateFlashcardsTable(window)
                 updateSelectedFlashcards(window, 0)
+                window['tableFlashcards'].Widget.see(1)
 
 
             if event == "Reschedule expired cards":
@@ -337,6 +348,7 @@ def browseFlashcards():
                 con.commit()
                 updateFlashcardsTable(window)
                 updateSelectedFlashcards(window, 0)
+                window['tableFlashcards'].Widget.see(1)
             
             if event == "Change box":
 

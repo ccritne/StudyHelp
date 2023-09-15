@@ -1,21 +1,21 @@
 from functions import *
 from addScheme import updateScheme
 
-def viewScheme(flashcardID):
+def viewScheme(flashcardID : int):
     if flashcardID is not None:      
         cursor.execute(f"SELECT filenameScheme FROM flashcards WHERE ID={flashcardID}")
         filename = cursor.fetchone()[0]
         
         condWindowVisible = False 
 
-        if filename is not None:
+        if filename not in [None, ""]:
             img = convert_to_bytes(filename, (800, 500))
 
             if img is None: #ERROR TO FIND THE IMAGE PROBABLY DELETED OR MOVED IT
                 
                 filename = updateScheme(flashcardID=flashcardID)
 
-                if filename is not None:
+                if filename not in [None, ""]:
                     img = convert_to_bytes(filename, (800, 500))
                     condWindowVisible = True 
             else:

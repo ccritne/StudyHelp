@@ -17,7 +17,7 @@ def updateScheme(flashcardID : int) -> str:
         
         if event in (sg.WIN_CLOSED, 'Exit', 'SaveScheme'):
             filename = values['filenameScheme']
-            if filename is not None:
+            if filename in (None, ""):
                 cursor.execute(f'UPDATE flashcards SET filenameScheme="{filename}" WHERE ID={flashcardID}')
                 con.commit()
             break
