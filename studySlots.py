@@ -30,7 +30,9 @@ def checkAddLectureSlot(indexDay: int, hour : int, minute: int, durationMinutes 
             arrEndTime = json[weekdays[indexDay]]['timeLectures']['timeEndDateLecture'].split(':')
             minuteStart = int(arrStartTime[0])*60 + int(arrStartTime[1])
             minuteEnd = int(arrEndTime[0])*60 + int(arrEndTime[1])
+            
             # !!! FIX FIX FIX I have to understand when I can convalidate a slot :D
+            condPUSH = True
 
 
 
