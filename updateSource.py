@@ -38,20 +38,111 @@ def updateDeadline(
             else:
                 window['previewDeadline'].update(value='Check values!')
 
+def creationEvents(
+        command : str, 
+        studySlotsInfo : list, 
+        lastPage : int,
+        withLectures : bool,
+        deadline : str
+        ):
+    ### Creation of events
+    lastID = None
+
+    if command == "NEW":
+        lastID = cursor.execute('SELECT MAX(ID) FROM SOURCES').fetchone()[0]
+
+    if command == "MODIFY": 
+        # Deletion of future events
+        lastID = getSelectedSourceID()
+        iterDay = datetime.now()
+        sql = "DELETE FROM calendar WHERE date >= ? AND sourceID = ?"
+        parameters = (getStringDate(iterDay), lastID)
+        cursor.execute(sql, parameters)
+        con.commit()
+        
+    iterDay = datetime.now()
+    insertDate = getStringDate(datetime.now())
+    days = (datetime.strptime(deadline, '%Y-%m-%d') - iterDay).days + 1
+    iter = 0
+    indexWeek = datetime.now().weekday()
+    sql = "INSERT INTO CALENDAR(type, insertedDay, date, startSession, endSession, sourceID) VALUES \n"
+
+    while iter <= days:
+        if studySlotsInfo[weekdays[indexWeek]]['isStudyDay'] and studySlotsInfo[weekdays[indexWeek]]['areThereSessions']: 
+            iterDayStr = getStringDate(iterDay)
+            for x in range(studySlotsInfo[weekdays[indexWeek]]['amount']):
+                studyType = studySlotsInfo[weekdays[indexWeek]]['types'][x]
+                
+                sql += "('"+studyType+"', '"+insertDate+"', '"+iterDayStr+"'"
+                
+                startPage = lastPage
+                endPage = startPage + studySlotsInfo[weekdays[indexWeek]]['pages'][x]
+                lastPage = endPage
+
+                if  studyType in ["Schematization"]:
+                    startPage = "NULL"
+                    endPage = "NULL"
+
+                sql += ", "+str(startPage)+", "+str(endPage)+", "+str(lastID)+"),"
+
+        indexWeek += 1
+        
+        if indexWeek == 7:
+            indexWeek = 0
+
+        iter += 1
+        
+        iterDay += timedelta(days=1)
+    
+    
+    sql = sql[:len(sql) - 1] + ';'
+
+    cursor.execute(sql)
+    con.commit()
+
+    if withLectures:
+        sql = 'INSERT INTO calendar(type, insertedDay, date, timeStartDate, timeEndDate, sourceID) VALUES \n'
+        iterDay = datetime.strptime(studySlotsInfo['startDateLectures'], '%Y-%m-%d')
+        insertDate = getStringDate(datetime.now())
+        deadlineLectures = studySlotsInfo['endDateLectures']
+        days = (datetime.strptime(deadlineLectures, '%Y-%m-%d') - iterDay).days
+        iter = 0
+        indexWeek = iterDay.weekday()
+
+        while iter <= days:
+            if studySlotsInfo[weekdays[indexWeek]]['areThereLectures']:
+                sql += "('Lecture', '"+insertDate+"','"+getStringDate(iterDay)+"', '"+studySlotsInfo[weekdays[indexWeek]]['timeLectures']['timeStartDateLecture']+"', '"+studySlotsInfo[weekdays[indexWeek]]['timeLectures']['timeEndDateLecture']+"', "+str(lastID)+"),"
+
+            indexWeek += 1
+
+            if indexWeek == 7:
+                indexWeek = 0
+
+            iter += 1
+            
+            iterDay += timedelta(days=1)
+
+        sql = sql[:len(sql)-1] + ";"
+        cursor.execute(sql)
+        con.commit()
+
 def updateSource(command : str ="NEW"):
 
     studyDays = [bool(int(x)) for x in getSettingsValue('studyDays')]
 
-    studySlotsInfo = None
-    sourceSlotsInfo = None
+    studySlotsInfo = {}
 
-    sourceValues = [None,"","100","0","", datetime.now().strftime('%Y-%m-%d'),"","", "30","0",datetime.now().strftime('%Y-%m-%d'),"0", ""]
+    defaultName = ""
+
+    defaultTodayDateStr = datetime.now().strftime('%Y-%m-%d')
+    
     sessions = "0000000"
     
     buttonText = "ADD"
     windowTitle = "ADD NEW SOURCE"
 
     withLectures = False
+    defaultNameCourse = ""
 
     isBook = True
     isVideo = False
@@ -62,52 +153,34 @@ def updateSource(command : str ="NEW"):
     defaultTotalMinutes = 30
     defaultViewedMinutes = 0
 
+    defaultPathfile = ""
+    defaultUrl = ""
+
+    defaultDeadline = "Insert sessions!"
+
     if command == "MODIFY":
         sourceValues = getSourceValues(getSelectedSourceID())
-        studySlotsInfo = ast.literal_eval(sourceValues[6])
 
-        sourceSlotsInfo = {}
+        studySlotsInfo = ast.literal_eval(sourceValues[7])
+        
+        def updateDefaultValue(oldValue, sourceValues, index):
+            if sourceValues[index] is not None:
+                return sourceValues[index]
+            
+            return oldValue
+            
+        defaultNameCourse = updateDefaultValue(defaultNameCourse, sourceValues, 1)
+        
+        defaultName = updateDefaultValue(defaultName, sourceValues, 2)
+        defaultTotalPages = updateDefaultValue(defaultName, sourceValues, 3)
+        defaultStudiedPages = updateDefaultValue(defaultStudiedPages, sourceValues, 4)
+        defaultPathfile = updateDefaultValue(defaultPathfile, sourceValues, 5)
+        defaultDeadline = updateDefaultValue(defaultDeadline, sourceValues, 6)
 
-        if sourceValues[2] is not None:
-            defaultTotalPages = sourceValues[2]
-    
-        if sourceValues[3] is not None:
-            defaultStudiedPages = sourceValues[3]
+        for x in range(7):
+            if studySlotsInfo[weekdays[x]]['isStudyDay'] and studySlotsInfo[weekdays[x]]['areThereSessions']:
+                sessions[x]=str(studySlotsInfo[x]['amount'])
 
-        if sourceValues[8] is not None:
-            defaultTotalMinutes = sourceValues[8]
-
-        if sourceValues[9] is not None:
-            defaultViewedMinutes = sourceValues[9]
-
-        sourceSlotsInfo['withLectures'] = studySlotsInfo['withLectures']
-        if studySlotsInfo['withLectures']:
-            sourceSlotsInfo['weekReps'] = studySlotsInfo['weekRepsLectures'] 
-            sourceSlotsInfo['startDateLectures'] = studySlotsInfo['startDateLectures']
-            sourceSlotsInfo['endDateLectures'] = studySlotsInfo['endDateLectures']
-            for x in range(7):
-                sourceSlotsInfo[weekdays[x]] = {}
-                sourceSlotsInfo[weekdays[x]]['areThereLectures'] = studySlotsInfo[weekdays[x]]['areThereLectures']
-                if studySlotsInfo[weekdays[x]]['areThereLectures']:
-                    sourceSlotsInfo[weekdays[x]]['timeLectures'] = {
-                        'timeStartDateLecture': studySlotsInfo[weekdays[x]]['timeLectures']['timeStartDateLecture'], 
-                        'timeEndDateLecture': studySlotsInfo[weekdays[x]]['timeLectures']['timeEndDateLecture'], 
-                        'durationLecture': studySlotsInfo[weekdays[x]]['timeLectures']['durationLecture']
-                    }
-
-        oldSessions = []
-        for x in weekdays:
-            if studySlotsInfo[x]['isStudyDay'] and studySlotsInfo[x]['areThereSessions']:
-                oldSessions.append(str(studySlotsInfo[x]['amount']))
-            else:
-                oldSessions.append("0")
-
-        isBook = True
-        if sourceValues[11] is not None:
-            isBook = sourceValues[11]
-        isVideo = not isBook
-
-        sessions = copy.copy(oldSessions)
 
         withLectures = studySlotsInfo['withLectures']
         
@@ -142,9 +215,8 @@ def updateSource(command : str ="NEW"):
             columnGroup.append(row)
 
     layout = [
-        [sg.Text('Name '), sg.Input(key='nameDeck', default_text=sourceValues[1],expand_x=True)],
-        [sg.Checkbox('Associate with lectures?', default=withLectures, key="checkboxLectures", enable_events=True), sg.Button('Insert slots', disabled= not withLectures, key="btnSlots")],
-        [sg.Radio('Book', key="textSource", default=isBook, group_id="typeSource", enable_events=True), sg.Radio('Video', default=isVideo, enable_events=True, key="videoSource", group_id="typeSource")],
+        [sg.Text('Name '), sg.Input(key='nameDeck', default_text=defaultName,expand_x=True)],
+        [sg.Checkbox('Associate with lectures?', default=withLectures, key="checkboxLectures", enable_events=True), sg.Text('Name course: ', key="DISPLAY_TEXT_NAME_COURSE", visible=withLectures), sg.Input(key="INPUT_TEXT_NAME_COURSE", default_text=defaultNameCourse, visible=withLectures), sg.Button('Insert slots', disabled= not withLectures, key="btnSlots")],
         [sg.HorizontalSeparator()],
         [
             sg.Column(columnGroup, justification="center")
@@ -152,32 +224,16 @@ def updateSource(command : str ="NEW"):
         [sg.Button('Study slots', key="STUDY_SLOTS", expand_x=True)],
         [sg.HorizontalSeparator()],
         [sg.Text('Number of pages ', size=(20, 1), visible=isBook, key="textNumberPages"), sg.Input(key='numberPages', default_text=defaultTotalPages, justification="center", size=(4, 1), enable_events=True, visible=isBook)],
-        [sg.Text('Total duration ', size=(20, 1), visible=isVideo, key="textTotalDuration"), sg.Input(key='durationMinutes', tooltip="Duration in minutes", default_text=defaultTotalMinutes, justification="center", size=(5, 1), enable_events=True, visible=isVideo)],
         
         [sg.Text('Number of studied pages ', size=(20, 1), visible=isBook, key="textStudiedPages"), sg.Input(key='entryStudiedPages', default_text=defaultStudiedPages, justification="center", size=(4, 1), enable_events=True, visible=isBook)],
-        [sg.Text('Minutes of see view ', size=(20, 1), visible=isVideo, key="textMinutesViewed"), sg.Input(key='viewedMinutes', tooltip="Duration in minutes", default_text=defaultViewedMinutes, justification="center", size=(5, 1), enable_events=True, visible=isVideo)],
         
-        [sg.Text('Document ', size=(20, 1)), sg.Input(key="pathSource", size=(10, 1), default_text=sourceValues[4]), sg.FileBrowse(file_types=(('Portable Document Format', 'PDF'),), visible=isBook)],
-        [sg.Text('Url ', size=(20, 1), visible=isVideo, key="urlVideo"), sg.Input(key="pathVideo", size=(30, 1), expand_x=True, default_text=sourceValues[7], visible=isVideo)],
+        [sg.Text('Document ', size=(20, 1)), sg.Input(key="pathSource", size=(10, 1), default_text=defaultPathfile), sg.FileBrowse(file_types=(('Portable Document Format', 'PDF'),), visible=isBook)],
         
-        [sg.Text('Deadline ', size=(20, 1)), sg.Input(key="previewDeadline", size=(13, 1), default_text=sourceValues[5], readonly=True)],
+        [sg.Text('Deadline ', size=(20, 1)), sg.Input(key="previewDeadline", size=(13, 1), default_text=defaultDeadline, readonly=True)],
         [sg.Button(buttonText, key="updateSource", expand_x=True)]
     ]
 
     window = sg.Window(windowTitle, layout=layout, modal=True, finalize=True, keep_on_top=True)
-
-    window['textNumberPages'].update(visible=isBook)
-    window['numberPages'].update(visible=isBook)
-    window['textTotalDuration'].update(visible=isVideo)
-    window['durationMinutes'].update(visible=isVideo)
-
-    window['textStudiedPages'].update(visible=isBook)
-    window['entryStudiedPages'].update(visible=isBook)
-    window['textMinutesViewed'].update(visible=isVideo)
-    window['viewedMinutes'].update(visible=isVideo)
-
-    window['urlVideo'].update(visible=isVideo)
-    window['pathVideo'].update(visible=isVideo)
 
     while True:
         event, values = window.read()
@@ -186,9 +242,8 @@ def updateSource(command : str ="NEW"):
             break
         
         if event is not None:
-            if event in ['numberPages', 'studiedPages', 'durationMinutes', 'viewedMinutes']:
-                isBook = bool(values['textSource'])
-                updateDeadline(isBook=isBook, isVideo=isVideo, window=window, values=values, studySlotsInfo=studySlotsInfo)
+            if event in ['numberPages', 'studiedPages']:
+                updateDeadline(isBook=isBook, window=window, values=values, studySlotsInfo=studySlotsInfo)
 
             if event == "STUDY_SLOTS":
                 arrAmounts = []
@@ -212,21 +267,6 @@ def updateSource(command : str ="NEW"):
                     if command == "MODIFY":
                         studySlotsInfo = getStudySlots(isBook=isBook, isVideo=isVideo, studyDays=bookStudyDays, arrAmount=arrAmounts, defaults=studySlotsInfo, sourceID=getSelectedSourceID())
 
-                    if sourceSlotsInfo is not None:
-                        studySlotsInfo['withLectures'] = sourceSlotsInfo['withLectures']
-                        if sourceSlotsInfo['withLectures']:
-                            studySlotsInfo['weekRepsLectures'] = sourceSlotsInfo['weekReps']
-                            studySlotsInfo['startDateLectures'] = sourceSlotsInfo['startDateLectures']
-                            studySlotsInfo['endDateLectures'] = sourceSlotsInfo['endDateLectures']
-                            for x in range(7):
-                                studySlotsInfo[weekdays[x]]['areThereLectures'] = sourceSlotsInfo[weekdays[x]]['areThereLectures']
-                                if weekdays[x] in sourceSlotsInfo and sourceSlotsInfo[weekdays[x]]['areThereLectures']:
-                                    studySlotsInfo[weekdays[x]]['timeLectures'] = {
-                                        'timeStartDateLecture': sourceSlotsInfo[weekdays[x]]['timeLectures']['timeStartDateLecture'], 
-                                        'timeEndDateLecture': sourceSlotsInfo[weekdays[x]]['timeLectures']['timeEndDateLecture'], 
-                                        'durationLecture': sourceSlotsInfo[weekdays[x]]['timeLectures']['durationLecture']
-                                    }
-
                     updateDeadline(isBook=isBook, window=window, values=values, studySlotsInfo=studySlotsInfo)
 
                     for x in range(7):
@@ -240,121 +280,66 @@ def updateSource(command : str ="NEW"):
                 else:
                     sg.popup_ok('Insert almost one session!', title="WARNING", keep_on_top=True, modal=True)
 
-            if event in ['textSource', 'videoSource']:
-                if event in ['textSource', 'videoSource']:
-                    if event == 'textSource':
-                        isBook = True
-                        isVideo = False
-
-                    if event == 'videoSource':
-                        isVideo = True
-                        isBook = False
-
-                    ### !!! Fixing the visible and values
-
-                    window['textNumberPages'].update(visible=isBook)
-                    window['numberPages'].update(visible=isBook)
-                    window['textTotalDuration'].update(visible=isVideo)
-                    window['durationMinutes'].update(visible=isVideo)
-
-                    window['textStudiedPages'].update(visible=isBook)
-                    window['entryStudiedPages'].update(visible=isBook)
-                    window['textMinutesViewed'].update(visible=isVideo)
-                    window['viewedMinutes'].update(visible=isVideo)
-
-                    window['urlVideo'].update(visible=isVideo)
-                    window['pathVideo'].update(visible=isVideo)
-            
             if event == "updateSource":
   
                 nameBook = values['nameDeck']
-                
-                if isVideo:
-                    query = 'INSERT INTO sources(name, arrSessions, deadline, url, durationMinutes, viewedMinutes, insertDate) VALUES (?, ?, ?, ?, ?, ?, ?)'
-                    if command == "MODIFY":
-                        query = 'UPDATE sources SET name = ?, arrSessions = ?, deadline = ?, url = ?, durationMinutes = ?, viewedMinutes = ? WHERE ID = ?'
-
-                    url = values['pathVideo']
-
-                    durationMinutesStr = values['durationMinutes']
-                    viewedMinutesStr = values['viewedMinutes']
-                    
-                    if checkStrIntInput(viewedMinutesStr) and checkStrIntInput(durationMinutesStr):
-
-                        viewedMinutes = int(viewedMinutesStr)
-                        durationMinutes = int(durationMinutesStr)
-
-                        if durationMinutes > 0 and viewedMinutes >= 0:
-                            if studySlotsInfo is not None:
-                                
-                                deadline = calculateDeadline(isBook=isBook, isVideo=isVideo, arrSessionWeek=studySlotsInfo, totalMinutes=durationMinutes, viewedMinutes=viewedMinutes)
-
-                                parameters = (nameBook, str(studySlotsInfo), deadline, url, durationMinutes, viewedMinutes)
-
-                                if command == 'MODIFY':
-                                    parameters = parameters + (getSelectedSourceID(), )
-
-                                if command == "NEW":
-                                    parameters = parameters + (datetime.now().strftime('%Y-%m-%d'), )
-
-                                                            
-                                cursor.execute(query, parameters)
-                                con.commit()
-                                break
-                            else:
-                                    sg.popup_ok('You have to set your study slots!', title="WARNING", keep_on_top=True, modal=True)
-                        else:
-                            sg.popup_ok('Please, set the correct values!', title="WARNING", keep_on_top=True, modal=True)
-                    else:
-                        sg.popup_ok('Please, set the correct values!', title="WARNING", keep_on_top=True, modal=True)
+                courseName = values['INPUT_TEXT_NAME_COURSE']
 
                 if isBook:
-                    query = 'INSERT INTO sources(name, numberPages, studiedPages, filename, arrSessions, deadline, insertDate) VALUES (?, ?, ?, ?, ?, ?, ?)'
+                    query = 'INSERT INTO sources(name, courseName, numberPages, studiedPages, filename, arrSessions, deadline, type, insertDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
                     if command == "MODIFY":
-                        query = 'UPDATE sources SET name = ?, numberPages = ?, studiedPages = ?, filename = ?, arrSessions = ?, deadline = ? WHERE ID = ?'
+                        query = 'UPDATE sources SET name = ?, courseName = ?, numberPages = ?, studiedPages = ?, filename = ?, arrSessions = ?, deadline = ? WHERE ID = ?'
 
                     numberPagesStr = values['numberPages']
                     studiedPagesStr = values['entryStudiedPages']
                     
                     filename = values['pathSource']
-                    
-                    if checkStrIntInput(numberPagesStr) and checkStrIntInput(studiedPagesStr):
+                    if withLectures and 'withLectures' in studySlotsInfo:
+                        if checkStrIntInput(numberPagesStr) and checkStrIntInput(studiedPagesStr):
 
-                        numberPages = int(numberPagesStr)
-                        studiedPages = int(studiedPagesStr)
+                            numberPages = int(numberPagesStr)
+                            studiedPages = int(studiedPagesStr)
 
-                        if numberPages > 0 and studiedPages >= 0:
-                            if studySlotsInfo is not None:
-                                
-                                deadline = calculateDeadline(isBook=isBook, arrSessionWeek=studySlotsInfo, totalPages=numberPages, studiedPages=studiedPages)
+                            if numberPages > 0 and studiedPages >= 0:
+                                if studySlotsInfo is not None:
+                                    
+                                    deadline = calculateDeadline(isBook=isBook, arrSessionWeek=studySlotsInfo, totalPages=numberPages, studiedPages=studiedPages)
 
-                                parameters = (nameBook, numberPages, studiedPages, filename, str(studySlotsInfo), deadline)
+                                    parameters = (nameBook, courseName, numberPages, studiedPages, filename, str(studySlotsInfo), deadline)
 
-                                if command == 'MODIFY':
-                                    parameters = parameters + (getSelectedSourceID(), )
+                                    if command == 'MODIFY':
+                                        parameters = parameters + (getSelectedSourceID(), )
 
-                                if command == "NEW":
-                                    parameters = parameters + (datetime.now().strftime('%Y-%m-%d'), )
+                                    if command == "NEW":
+                                        parameters = parameters + (defaultTodayDateStr, )
 
-                                cursor.execute(query, parameters)
-                                con.commit()
-                                break
+                                    cursor.execute(query, parameters)
+                                    con.commit()
+
+                                    lastPage = studiedPages + 1
+
+                                    creationEvents(command=command, studySlotsInfo=studySlotsInfo, lastPage=lastPage, withLectures=withLectures, deadline=deadline)
+                                    
+
+
+                                    break
+                                else:
+                                    sg.popup_ok('You have to set your study slots!', title="WARNING", keep_on_top=True, modal=True)
                             else:
-                                sg.popup_ok('You have to set your study slots!', title="WARNING", keep_on_top=True, modal=True)
+                                sg.popup_ok('Please, set the correct values!', title="WARNING", keep_on_top=True, modal=True)
                         else:
                             sg.popup_ok('Please, set the correct values!', title="WARNING", keep_on_top=True, modal=True)
                     else:
-                        sg.popup_ok('Please, set the correct values!', title="WARNING", keep_on_top=True, modal=True)
+                        sg.popup_ok('You have to set your lectures slots!', title="WARNING", keep_on_top=True, modal=True)
     
             if event == "checkboxLectures":
                 withLectures = values['checkboxLectures']
                 window['btnSlots'].update(disabled = not withLectures)
+                window['DISPLAY_TEXT_NAME_COURSE'].update(visible = withLectures)
+                window['INPUT_TEXT_NAME_COURSE'].update(visible = withLectures)
 
             if event == "btnSlots":
-                sourceSlotsInfo = getSourceSlots(sourceSlotsInfo)
-
-                if studySlotsInfo is None:
-                    studySlotsInfo = {}
+                sourceSlotsInfo = getSourceSlots(studySlotsInfo)
 
                 studySlotsInfo['withLectures'] = sourceSlotsInfo['withLectures']
                 if sourceSlotsInfo['withLectures']:

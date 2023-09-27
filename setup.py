@@ -1,34 +1,35 @@
+import datetime
+from datetime import datetime
 import sqlite3
 
 con = sqlite3.connect("datas.db")
 cursor = con.cursor()
 
-previousPage = None
-actualPage = None
+previousPage : str | None = None
+actualPage : str | None = None
 
-rowSources = None
-rowFlashcards = None
+rowSources :int | None = None
+rowFlashcards : int | None = None
 
-sourcesNames = []
-flashcards = []
-sourcesArray = []
-flashcardsArray = []
-tableDeck = []
+sourcesNames : list = []
+flashcards : list = []
+sourcesArray : list = []
+flashcardsArray : list = []
+tableDeck : list = []
 
-playedSourceID = None
-playedFlashcardID = None
+playedSourceID : int | None = None
+playedFlashcardID : int | None = None
 
-selectedSourceID = None
-selectedFlashcardID = None
+selectedSourceID : int | None = None
+selectedFlashcardID : int | None = None
 
-frontInputSelected = False
-backInputSelected = False
+frontInputSelected : bool = False
+backInputSelected : bool = False
 
 weekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
 weekdays_complete = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-selectedDate = None
+selectedDate : datetime | str | None = None
 
-
-frontLayout = [[]]
-backLayout = [[]]
+frontLayout : list[list] = [[]]
+backLayout : list[list] = [[]]

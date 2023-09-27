@@ -9,6 +9,7 @@ import re
 import ast
 import textwrap
 import base64
+import os
 
 def changePreviousPage(oldPage : str):
     global previousPage
@@ -35,11 +36,11 @@ def FromTo(str_from : str, str_to : str, window : sg.Window):
 def calculateDeadline(
         arrSessionWeek : list,
         isBook : bool = True,
-        isVideo: bool = False,
+        # isVideo: bool = False,
         totalPages : int | None = 0, 
         studiedPages : int | None = 0,
-        totalMinutes : int | None = 0, 
-        viewedMinutes : int | None = 0,  
+        # totalMinutes : int | None = 0, 
+        # viewedMinutes : int | None = 0,  
         ) -> str:
 
     todayDate = datetime.now()
@@ -50,9 +51,9 @@ def calculateDeadline(
     
     indexStr = ''
 
-    if isVideo:
-        remaining = totalMinutes - viewedMinutes
-        indexStr = 'totalDuration'
+    # if isVideo:
+    #    remaining = totalMinutes - viewedMinutes
+    #    indexStr = 'totalDuration'
 
     if isBook:
         remaining = totalPages - studiedPages
@@ -69,8 +70,6 @@ def calculateDeadline(
             daysToAdd += 1
 
     deadline += timedelta(days=daysToAdd)
-    
-
     
     weekDo = arrSessionWeek[indexStr]
 
@@ -102,7 +101,7 @@ def calculateDeadline(
 
     deadline += timedelta(days=daysToAdd)
 
-    return deadline.strftime('%Y-%m-%d')    
+    return deadline   
 
 def allSourcesNames() -> list:
     cursor.execute('SELECT DISTINCT id, name FROM sources')
@@ -202,19 +201,16 @@ def setPlayedFlashcardID(id : int | None):
     global playedFlashcardID
     playedFlashcardID = id
 
-def convert_to_bytes(file_or_bytes, resize=None) -> bytes:
-    if file_or_bytes is not None:
-        try:
-            img = Image.open(file_or_bytes)
-            if resize is not None:
-                img = img.resize(resize)
-            with BytesIO() as bio:
-                img.save(bio, format="PNG")
-                del img
-                return bio.getvalue()
-        except:
-            return None
-    else:
+def convert_to_bytes(filename, resize=None) -> bytes:
+    try:
+        img = Image.open(filename)
+        if resize is not None:
+            img = img.resize(resize)
+        with BytesIO() as bio:
+            img.save(bio, format="PNG")
+            del img
+            return bio.getvalue()
+    except:        
         return None
     
 def getPlayedFlashcardID() -> int | None:
@@ -388,3 +384,19 @@ def fromNumberToTime(number : int) -> str:
     
     return str(number)
     
+
+def existsFilename(filename):
+
+    if filename in [None, "", 'EXIT_WINDOW', 'FILE_NOT_FOUND']:
+        return False
+    
+    isFile = os.path.isfile(filename)
+
+    return isFile
+
+def existsImg(img):
+
+    if img in [None]:
+        return False
+
+    return True

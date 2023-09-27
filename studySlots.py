@@ -1,20 +1,5 @@
 from functions import *
 
-'''
-    Sessions = [
-        {},
-        {
-            "amount": int,
-            "durations": arrInt,    # lenght based on amount value,
-            "types": arrStrings,    # ...
-            "pages": arrInt,        # ...               
-            "minutes": arrInt,  
-
-        },...
-    ] # based on studyDays
-
-'''
-
 def checkAddLectureSlot(indexDay: int, hour : int, minute: int, durationMinutes : int, exceptID: int = None):
     query = 'SELECT arrSessions FROM sources '
     if exceptID is not None:
@@ -42,9 +27,15 @@ def getSourceSlots(defaults : dict = None):
 
     rows = []
 
-    if defaults is not None:
+    defaultStartDate = ""
+    defaultEndDate = ""
+    
+    if defaults != {} and defaults is not None:
         infos = copy.copy(defaults)
-
+        if 'startDateLectures' in defaults and 'endDateLectures' in defaults:
+            defaultStartDate = defaults['startDateLectures']
+            defaultEndDate = defaults['endDateLectures']
+    
     for x in range(7):
         weekday = weekdays[x]
 
@@ -55,12 +46,7 @@ def getSourceSlots(defaults : dict = None):
         defaultEndHour = "10"
         defaultEndMinute = "30"
 
-        defaultStartDate = ""
-        defaultEndDate = ""
-
-        if defaults is not None:
-            defaultStartDate = defaults['startDateLectures']
-            defaultEndDate = defaults['endDateLectures']
+        if defaults != {} and defaults is not None and 'withLectures' in defaults:
             
             if defaults['withLectures'] and weekday in defaults and defaults[weekday]['areThereLectures']:
                 defaultCheck = True
@@ -264,8 +250,9 @@ def getStudySlots(
 
                 defaultDuration = 5
                 
-                if defaults is not None:
+                if defaults and defaults is not None:
                     infos = copy.copy(defaults)
+
                     if 'areThereSessions' in defaults[weekdays[x]] and defaults[weekdays[x]]['areThereSessions'] and j < defaults[weekdays[x]]['amount']:
                     
                         defaultType = defaults[weekdays[x]]['types'][j]
@@ -358,11 +345,21 @@ def getStudySlots(
                             for j in range(arrAmount[x]):
                                 if isBook:
                                     pages = int(values[f'INPUT_TEXT_PAGES_{j}_SESSION_{weekdays[x]}'])
+                                    typeStudy = values[f'COMBO_TYPE_{j}_SESSION_{weekdays[x]}']
+
+                                    if typeStudy in ['Schematization']:
+                                        pages = 0
+                                    
                                     infos[weekdays[x]]['pages'].append(pages)
                                     infos[weekdays[x]]['totalPages'] += pages
                                     infos['totalPages'] += pages
                                 else:
                                     minutes = int(values[f'INPUT_TEXT_DURATION_{j}_SESSION_{weekdays[x]}'])
+                                    typeStudy = values[f'COMBO_TYPE_{j}_SESSION_{weekdays[x]}']
+
+                                    if typeStudy in ['Schematization']:
+                                        minutes = 0
+
                                     infos[weekdays[x]]['minutes'].append(minutes)
                                     infos[weekdays[x]]['totalMinutes'] += minutes
                                     infos['totalMinutes'] += minutes

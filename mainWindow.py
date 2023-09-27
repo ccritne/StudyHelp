@@ -2,13 +2,15 @@ from functions import *
 from browseFlashcards import browseFlashcards
 from viewScheme import viewScheme
 from todayStudy import todayStudyFlashcards
+from todaySourceSessions import seeTodaySessions
+from toDoList import seeToDoList
 
 def makeMainWindow():
 
     MenuLayout = [
         [sg.Button('Flashcards', key="flashcards", size=225)],
         [sg.Button('Check deadlines', key="deadlines", size=225)],
-        [sg.Button('Study sources', key="studySource", size=225)],
+        [sg.Button('Today source session', key="todayStudySource", size=225)],
         [sg.Button('To-Do List', key="todolist", size=225)],
         [sg.Button('Settings', key="settings", size=225)],
     ]
@@ -19,27 +21,6 @@ def makeMainWindow():
         [sg.HorizontalSeparator()],
         [sg.Button('Menu', key="EVENT_MENU_Flashcards", size=225)]
     ]
-
-    decksLayout = [
-        [
-                sg.Table(
-                    values=[], 
-                    headings=["ID","Source Name", "Today"],
-                    enable_events=True, 
-                    hide_vertical_scroll=True,
-                    justification="center",
-                    key="studyDeck"
-            )
-        ],
-        [sg.HorizontalSeparator()],
-        [
-            sg.Button('Back', key="EVENT_BACK_Deck"),
-            sg.Button('Home', key="EVENT_MENU_Deck"),
-            sg.Button('Start', key="startDecks"),
-        ]
-    ]
-
-
 
     DeadlinesLayout = [
         [
@@ -64,9 +45,9 @@ def makeMainWindow():
     studyDays = getSettingsValue('studyDays')
 
     SettingsLayout = [
-                [sg.Text('Max study hour', size=(15, 1)), sg.Input(default_text=getSettingsValue('maxStudyHour'), key='maxStudyHour', size=(5, 1))],
-                [sg.Text('Hour for Notification', size=(15, 1)), sg.Combo([x for x in range(8, 24)], key='defaultHourNotification', default_value=getSettingsValue('defaultHourNotification'), size=(5,1))],
-                [sg.Text('Max subjects for day', size=(15, 1)), sg.Combo([x for x in range(1, 4)], key='maxSubjectsDay', default_value=getSettingsValue('maxSubjectsDay'), size=(5,1))],
+                [sg.Text('Max study hour', size=(20, 1)), sg.Input(default_text=getSettingsValue('maxStudyHour'), key='maxStudyHour', size=(5, 1))],
+                [sg.Text('Hour for Notification', size=(20, 1)), sg.Combo([x for x in range(8, 24)], key='defaultHourNotification', default_value=getSettingsValue('defaultHourNotification'), size=(3,1))],
+                [sg.Text('Max subjects for day', size=(20, 1)), sg.Combo([x for x in range(1, 4)], key='maxSubjectsDay', default_value=getSettingsValue('maxSubjectsDay'), size=(3,1))],
                 [sg.Text('Days ')],
                 [sg.Checkbox(text='Mon', size=(6, 1), key='monSettings', default=bool(int(studyDays[0]))), sg.Checkbox(text='Fri', size=(6, 1), key='friSettings', default=bool(int(studyDays[4])))],
                 [sg.Checkbox(text='Tue', size=(6, 1), key='tueSettings', default=bool(int(studyDays[1]))), sg.Checkbox(text='Sat', size=(6, 1), key='satSettings', default=bool(int(studyDays[5])))],
@@ -75,34 +56,7 @@ def makeMainWindow():
                 [sg.HorizontalSeparator()],
                 [sg.Button('Menu', key="EVENT_MENU_Settings")]
     ]
-    
-    dt = datetime.combine(datetime.now(), time(0, 0))
-    setSelectedDate(dt)
-    
-    right_click_calendar = ['Edit', ['This event', 'This and all following events', 'All events']]
 
-    def getToDoDataOf(date):
-        query = f'SELECT * FROM calendar WHERE (startDate <= ?  and  ? <= endDate and weekReps = "0000000") or (startDate <= ? and substr(weekReps, strftime("%w",?), 1) = "1" and weekReps <> "0000000") ORDER BY insertedDay'
-        parameters = (date, date, date, date)
-
-        cursor.execute(query, parameters)
-        result = cursor.fetchall()
-
-        ret = []
-        for x in result:
-            ret.append(x[9] + "-" + x[10] + " " + x[1])
-
-        return ret
-    
-    todoList = getToDoDataOf(getStringDate(getSelectedDate()))
-    
-    ToDoListLayout = [
-                [sg.InputText(key="selectedDate", default_text=getStringDate(getSelectedDate()), size=(10, 1)), sg.Button('Select day', key='selectToDoDate')],
-                [sg.Listbox(values=todoList, key="To-Do-List", no_scrollbar=True, size=(50, 18), expand_y=True, expand_x=True, right_click_menu=right_click_calendar)],
-                [sg.HorizontalSeparator()],
-                [sg.Button('Menu', key="EVENT_MENU_ToDoList")]
-            ]
-    
     menuBar = [
         ['File', 'Exit'],
         ['Help', 'About']
@@ -112,18 +66,15 @@ def makeMainWindow():
                 [sg.Menu(menuBar)],
                 [
                     sg.Column(MenuLayout, visible=True, key='Menu', justification="center", vertical_alignment="center"), 
-                    sg.Column(FlashcardsLayout, visible=False, key="Flashcards", justification="center"), 
-                    sg.Column(decksLayout, visible=False, key="Deck", justification="center"),
+                    sg.Column(FlashcardsLayout, visible=False, key="Flashcards", justification="center"),
                     sg.Column(DeadlinesLayout, visible=False, key="Deadlines", justification="center"), 
                     sg.Column(SettingsLayout, visible=False, key="Settings", justification="center"),
-                    sg.Column(BooksLayout, visible=False, key="Books", justification="center"),
-                    sg.Column(ToDoListLayout, visible=False, key="ToDoList")
+                    sg.Column(BooksLayout, visible=False, key="Books", justification="center")
                 ]
             ]
     
     window =  sg.Window(title="StudyHelp", layout=layout, size=(300, 400), finalize=True)
     
-    window['selectedDate'].bind("<Return>", "_Enter")
 
 
     while True:
@@ -137,8 +88,8 @@ def makeMainWindow():
                 FromTo('Menu', 'Flashcards', window)
     
             if event == "deadlines":
-                books = cursor.execute('SELECT ID, name, deadline FROM sources').fetchall()
-                window['deadlinesDeck'].update(values=books)
+                sources = cursor.execute('SELECT ID, name, deadline FROM sources').fetchall()
+                window['deadlinesDeck'].update(values=sources)
                 FromTo('Menu', 'Deadlines', window)
 
             if event == "settings":
@@ -148,15 +99,22 @@ def makeMainWindow():
                 FromTo('Menu', 'Books', window)
             
             if event == "todolist":
-                FromTo('Menu', 'ToDoList', window)
+                seeToDoList()
+            
+            if event == "todayStudySource":
+                seeTodaySessions()
+
 
             ### END BINDING MENULAYOUT EVENTS
 
             ### START BINDING FLASHCARDSLAYOUT EVENTS
             
             if event == "studyFlashcards":
-                setTableDeck(getInfoDecks())
-                window['studyDeck'].update(values=getTableDeck())
+                infoDecks = getInfoDecks()
+
+                window['studyDeck'].update(values=infoDecks)
+
+                setTableDeck(infoDecks)
 
                 FromTo('Flashcards', 'Deck', window)
 
@@ -167,14 +125,12 @@ def makeMainWindow():
             if event == 'startDecks':
                 playedSourceID = getTableDeck()[values['studyDeck'][0]][0]
 
+                todayFlashcardsOfSource = getTodayFlashcardsSource(playedSourceID)
 
-                setFlashcardsArray(getTodayFlashcardsSource(playedSourceID))
-                
-                print('OUT - len(FlashcardsArray)', len(getFlashcardsArray()))
+                setFlashcardsArray(todayFlashcardsOfSource)
                 
                 while len(getFlashcardsArray()) > 0:
                     state = todayStudyFlashcards()
-                    print('IN - len(FlashcardsArray)', len(getFlashcardsArray()))
 
                     if state == "EXIT":
                         break
@@ -216,6 +172,7 @@ def makeMainWindow():
                                         str(int(window['friSettings'].get())),
                                         str(int(window['satSettings'].get())),
                                         str(int(window['sunSettings'].get()))])
+                    
                     query = '''UPDATE settings SET  maxStudyHour= ? , 
                                                     defaultHourNotification = ?, 
                                                     studyDays = ?,
@@ -235,23 +192,6 @@ def makeMainWindow():
             if event == "seeScheme":
                 viewScheme(flashcardID=getPlayedFlashcardID())
             
-            ###
-
-            ### TO-DO LIST EVENTS
-
-            if event in ["selectToDoDate", 'selectedDate_Enter']:
-                sDate = values['selectedDate']
-                if event == 'selectToDoDate':
-                    dtMon = datetime.now().month
-                    selectedDate = sg.popup_get_date(close_when_chosen=True, start_mon=dtMon, no_titlebar=False, modal=True, keep_on_top=True)
-                    sDate = datetime(year=selectedDate[2], month=selectedDate[0], day=selectedDate[1])
-                    setSelectedDate(sDate)
-                else:
-                    setSelectedDate(datetime.strptime(sDate, '%Y-%m-%d'))
-    
-                window['selectedDate'].update(value=getStringDate(getSelectedDate()))
-                window['To-Do-List'].update(values=getToDoDataOf(getSelectedDate()))
-
             ###
    
     window.close()
