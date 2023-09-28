@@ -107,7 +107,7 @@ def getSourceSlots(defaults : dict = None):
 
                 if sumOfLectures > 0:
                     infos['withLectures'] = True
-                    infos['weekReps'] = ""
+                    infos['weekRepsLectures'] = ""
                 
                     infos['startDateLectures'] = values['startLectures']
                     infos['endDateLectures'] = values["endLectures"]
@@ -115,7 +115,7 @@ def getSourceSlots(defaults : dict = None):
                         infos[weekdays[x]] = {}
                         if values["CHECKBOX_"+weekdays[x]]:
                             infos[weekdays[x]]['areThereLectures'] = True
-                            infos['weekReps'] += "1"
+                            infos['weekRepsLectures'] += "1"
                             infos[weekdays[x]]['timeLectures']={
                                 "timeStartDateLecture": values['START_HOUR_'+weekdays[x]]+":"+values['START_MINUTE_'+weekdays[x]],
                                 "timeEndDateLecture": values['END_HOUR_'+weekdays[x]]+":"+values['END_MINUTE_'+weekdays[x]],
@@ -248,7 +248,7 @@ def getStudySlots(
                     defaultType = "Reading"
                     condType = True
 
-                defaultDuration = 5
+                defaultDuration = 55
                 
                 if defaults and defaults is not None:
                     infos = copy.copy(defaults)
@@ -335,12 +335,11 @@ def getStudySlots(
                             infos[weekdays[x]]['amount'] = arrAmount[x]
                             infos[weekdays[x]]['types'] = []
                             infos[weekdays[x]]['durations'] = []
+                            
                             if isBook:
                                 infos[weekdays[x]]['pages'] = []
                                 infos[weekdays[x]]['totalPages'] = 0
-                            else:
-                                infos[weekdays[x]]['minutes'] = []
-                                infos[weekdays[x]]['totalMinutes'] = 0
+
                             infos[weekdays[x]]['totalDuration'] = 0
                             for j in range(arrAmount[x]):
                                 if isBook:

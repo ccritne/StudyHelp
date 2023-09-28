@@ -41,7 +41,7 @@ def calculateDeadline(
         studiedPages : int | None = 0,
         # totalMinutes : int | None = 0, 
         # viewedMinutes : int | None = 0,  
-        ) -> str:
+        ) -> datetime:
 
     todayDate = datetime.now()
     todayIndex = todayDate.weekday()
@@ -274,6 +274,8 @@ def getTotalMinutes(indexDay, exceptID=None):
         json = ast.literal_eval(x[0])
         if json[weekdays[indexDay]]['isStudyDay'] and json[weekdays[indexDay]]['areThereSessions']:
             totalMinutes += json[weekdays[indexDay]]['totalDuration']
+        if json['withLectures'] and json[weekdays[indexDay]]['areThereLectures']:
+            totalMinutes += json[weekdays[indexDay]]['timeLectures']['durationLecture']
 
     return totalMinutes
 

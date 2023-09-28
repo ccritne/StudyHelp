@@ -18,9 +18,10 @@ def updateFlashcardsInputs(window : sg.Window, front : str, back : str):
 def updateSelectedSource(window : sg.Window, row : int):
 
     sourceID = None
+    sourcesArr = getSourcesArray()
 
-    if row is not None:
-        sourceID = getSourcesArray()[row][0]
+    if row is not None and sourcesArr != []:
+        sourceID = sourcesArr[row][0]
         window['tableSources'].update(select_rows=[row])
     
     setSelectedSourceID(sourceID)
@@ -87,9 +88,10 @@ def browseFlashcards():
 
     setSelectedSourceID(None)
     setRowSources(None)
-    setFlashcardsArray(None)
     setSelectedFlashcardID(None)
     setRowFlashcards(None)
+    
+    setFlashcardsArray([])
 
     if sourcesNames != []:
         firstSourceID = sourcesNames[0][0]
@@ -164,6 +166,7 @@ def browseFlashcards():
 
     frontDefaultText = ""
     backDefaultText = ""
+
     if flashcardsArr != []: 
         frontDefaultText = flashcardsArr[0][1] 
         backDefaultText = flashcardsArr[0][2]

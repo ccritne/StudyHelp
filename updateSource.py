@@ -18,23 +18,7 @@ def updateDeadline(
             if numberPages > 0 and studiedPages >= 0:
                 if studySlotsInfo is not None:
                     window['previewDeadline'].update(
-                        value=calculateDeadline(isBook=isBook, arrSessionWeek=studySlotsInfo, totalPages=numberPages, studiedPages=studiedPages))
-            else:
-                window['previewDeadline'].update(value='Check values!')
-
-    if isVideo:
-        durationMinutesStr = values['durationMinutes']
-        viewedMinutesStr = values['viewedMinutes']
-        
-        if checkStrIntInput(viewedMinutesStr) and checkStrIntInput(durationMinutesStr):
-
-            viewedMinutes = int(viewedMinutesStr)
-            durationMinutes = int(durationMinutesStr)
-
-            if durationMinutes > 0 and viewedMinutes >= 0:
-                if studySlotsInfo is not None:
-                    window['previewDeadline'].update(
-                        value=calculateDeadline(isBook=isBook, isVideo=isVideo, arrSessionWeek=studySlotsInfo, totalMinutes=durationMinutes, viewedMinutes=viewedMinutes))
+                        value=getStringDate(calculateDeadline(isBook=isBook, arrSessionWeek=studySlotsInfo, totalPages=numberPages, studiedPages=studiedPages)))
             else:
                 window['previewDeadline'].update(value='Check values!')
 
@@ -43,7 +27,7 @@ def creationEvents(
         studySlotsInfo : list, 
         lastPage : int,
         withLectures : bool,
-        deadline : str
+        deadline : datetime
         ):
     ### Creation of events
     lastID = None
@@ -62,7 +46,7 @@ def creationEvents(
         
     iterDay = datetime.now()
     insertDate = getStringDate(datetime.now())
-    days = (datetime.strptime(deadline, '%Y-%m-%d') - iterDay).days + 1
+    days = (deadline - iterDay).days + 1
     iter = 0
     indexWeek = datetime.now().weekday()
     sql = "INSERT INTO CALENDAR(type, insertedDay, date, startSession, endSession, sourceID) VALUES \n"
@@ -136,7 +120,7 @@ def updateSource(command : str ="NEW"):
 
     defaultTodayDateStr = datetime.now().strftime('%Y-%m-%d')
     
-    sessions = "0000000"
+    sessions = ""
     
     buttonText = "ADD"
     windowTitle = "ADD NEW SOURCE"
@@ -179,7 +163,9 @@ def updateSource(command : str ="NEW"):
 
         for x in range(7):
             if studySlotsInfo[weekdays[x]]['isStudyDay'] and studySlotsInfo[weekdays[x]]['areThereSessions']:
-                sessions[x]=str(studySlotsInfo[x]['amount'])
+                sessions += str(studySlotsInfo[weekdays[x]]['amount'])
+            else:
+                sessions += "0"
 
 
         withLectures = studySlotsInfo['withLectures']
@@ -229,7 +215,7 @@ def updateSource(command : str ="NEW"):
         
         [sg.Text('Document ', size=(20, 1)), sg.Input(key="pathSource", size=(10, 1), default_text=defaultPathfile), sg.FileBrowse(file_types=(('Portable Document Format', 'PDF'),), visible=isBook)],
         
-        [sg.Text('Deadline ', size=(20, 1)), sg.Input(key="previewDeadline", size=(13, 1), default_text=defaultDeadline, readonly=True)],
+        [sg.Text('Deadline ', size=(20, 1)), sg.Input(key="previewDeadline", size=(10, 1), default_text=defaultDeadline, readonly=True)],
         [sg.Button(buttonText, key="updateSource", expand_x=True)]
     ]
 
@@ -242,7 +228,7 @@ def updateSource(command : str ="NEW"):
             break
         
         if event is not None:
-            if event in ['numberPages', 'studiedPages']:
+            if event in ['numberPages', 'studiedPages'] and studySlotsInfo != {}:
                 updateDeadline(isBook=isBook, window=window, values=values, studySlotsInfo=studySlotsInfo)
 
             if event == "STUDY_SLOTS":
@@ -286,7 +272,7 @@ def updateSource(command : str ="NEW"):
                 courseName = values['INPUT_TEXT_NAME_COURSE']
 
                 if isBook:
-                    query = 'INSERT INTO sources(name, courseName, numberPages, studiedPages, filename, arrSessions, deadline, type, insertDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+                    query = 'INSERT INTO sources(name, courseName, numberPages, studiedPages, filename, arrSessions, deadline, insertDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
                     if command == "MODIFY":
                         query = 'UPDATE sources SET name = ?, courseName = ?, numberPages = ?, studiedPages = ?, filename = ?, arrSessions = ?, deadline = ? WHERE ID = ?'
 
@@ -294,43 +280,39 @@ def updateSource(command : str ="NEW"):
                     studiedPagesStr = values['entryStudiedPages']
                     
                     filename = values['pathSource']
-                    if withLectures and 'withLectures' in studySlotsInfo:
-                        if checkStrIntInput(numberPagesStr) and checkStrIntInput(studiedPagesStr):
 
-                            numberPages = int(numberPagesStr)
-                            studiedPages = int(studiedPagesStr)
+                    if checkStrIntInput(numberPagesStr) and checkStrIntInput(studiedPagesStr):
 
-                            if numberPages > 0 and studiedPages >= 0:
-                                if studySlotsInfo is not None:
-                                    
-                                    deadline = calculateDeadline(isBook=isBook, arrSessionWeek=studySlotsInfo, totalPages=numberPages, studiedPages=studiedPages)
+                        numberPages = int(numberPagesStr)
+                        studiedPages = int(studiedPagesStr)
 
-                                    parameters = (nameBook, courseName, numberPages, studiedPages, filename, str(studySlotsInfo), deadline)
+                        if numberPages > 0 and studiedPages >= 0:
+                            if studySlotsInfo != {}:
+                                
+                                deadline = calculateDeadline(isBook=isBook, arrSessionWeek=studySlotsInfo, totalPages=numberPages, studiedPages=studiedPages)
 
-                                    if command == 'MODIFY':
-                                        parameters = parameters + (getSelectedSourceID(), )
+                                parameters = (nameBook, courseName, numberPages, studiedPages, filename, str(studySlotsInfo), deadline)
 
-                                    if command == "NEW":
-                                        parameters = parameters + (defaultTodayDateStr, )
+                                if command == 'MODIFY':
+                                    parameters = parameters + (getSelectedSourceID(), )
 
-                                    cursor.execute(query, parameters)
-                                    con.commit()
+                                if command == "NEW":
+                                    parameters = parameters + (defaultTodayDateStr, )
 
-                                    lastPage = studiedPages + 1
+                                cursor.execute(query, parameters)
+                                con.commit()
 
-                                    creationEvents(command=command, studySlotsInfo=studySlotsInfo, lastPage=lastPage, withLectures=withLectures, deadline=deadline)
-                                    
+                                lastPage = studiedPages + 1
 
+                                creationEvents(command=command, studySlotsInfo=studySlotsInfo, lastPage=lastPage, withLectures=withLectures, deadline=deadline)
 
-                                    break
-                                else:
-                                    sg.popup_ok('You have to set your study slots!', title="WARNING", keep_on_top=True, modal=True)
+                                break
                             else:
-                                sg.popup_ok('Please, set the correct values!', title="WARNING", keep_on_top=True, modal=True)
+                                sg.popup_ok('You have to set your study slots!', title="WARNING", keep_on_top=True, modal=True)
                         else:
                             sg.popup_ok('Please, set the correct values!', title="WARNING", keep_on_top=True, modal=True)
                     else:
-                        sg.popup_ok('You have to set your lectures slots!', title="WARNING", keep_on_top=True, modal=True)
+                        sg.popup_ok('Please, set the correct values!', title="WARNING", keep_on_top=True, modal=True)
     
             if event == "checkboxLectures":
                 withLectures = values['checkboxLectures']
@@ -342,8 +324,8 @@ def updateSource(command : str ="NEW"):
                 sourceSlotsInfo = getSourceSlots(studySlotsInfo)
 
                 studySlotsInfo['withLectures'] = sourceSlotsInfo['withLectures']
-                if sourceSlotsInfo['withLectures']:
-                    studySlotsInfo['weekRepsLectures'] = sourceSlotsInfo['weekReps']
+                if studySlotsInfo['withLectures']:
+                    studySlotsInfo['weekRepsLectures'] = sourceSlotsInfo['weekRepsLectures']
                     studySlotsInfo['startDateLectures'] = sourceSlotsInfo['startDateLectures']
                     studySlotsInfo['endDateLectures'] = sourceSlotsInfo['endDateLectures']
                     for x in range(7):
@@ -358,5 +340,6 @@ def updateSource(command : str ="NEW"):
                                 'timeEndDateLecture': sourceSlotsInfo[weekdays[x]]['timeLectures']['timeEndDateLecture'], 
                                 'durationLecture': sourceSlotsInfo[weekdays[x]]['timeLectures']['durationLecture']
                             }
+
 
     window.close()
