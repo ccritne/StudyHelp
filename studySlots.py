@@ -122,7 +122,7 @@ def getSourceSlots(defaults : dict = None):
                                 "durationLecture": (int(values['END_HOUR_'+weekdays[x]])*60 + int(values['END_MINUTE_'+weekdays[x]])) - (int(values['START_HOUR_'+weekdays[x]])*60 + int(values['START_MINUTE_'+weekdays[x]]))
                             }
                         else:
-                            infos['weekReps'] += "0"
+                            infos['weekRepsLectures'] += "0"
                             infos[weekdays[x]]['areThereLectures'] = False
                 else:
                     infos['withLectures'] = False

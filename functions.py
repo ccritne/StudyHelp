@@ -36,11 +36,8 @@ def FromTo(str_from : str, str_to : str, window : sg.Window):
 def calculateDeadline(
         arrSessionWeek : list,
         isBook : bool = True,
-        # isVideo: bool = False,
         totalPages : int | None = 0, 
         studiedPages : int | None = 0,
-        # totalMinutes : int | None = 0, 
-        # viewedMinutes : int | None = 0,  
         ) -> datetime:
 
     todayDate = datetime.now()
@@ -51,9 +48,6 @@ def calculateDeadline(
     
     indexStr = ''
 
-    # if isVideo:
-    #    remaining = totalMinutes - viewedMinutes
-    #    indexStr = 'totalDuration'
 
     if isBook:
         remaining = totalPages - studiedPages
@@ -189,17 +183,6 @@ def getSelectedFlashcardID() -> int | None:
     global selectedFlashcardID
     return selectedFlashcardID
 
-def setPlayedSourceID(id : int | None):
-    global playedSourceID
-    playedSourceID = id
-
-def getPlayedSourceID() -> int | None:
-    global playedSourceID
-    return playedSourceID
-
-def setPlayedFlashcardID(id : int | None):
-    global playedFlashcardID
-    playedFlashcardID = id
 
 def convert_to_bytes(filename, resize=None) -> bytes:
     try:
@@ -212,10 +195,6 @@ def convert_to_bytes(filename, resize=None) -> bytes:
             return bio.getvalue()
     except:        
         return None
-    
-def getPlayedFlashcardID() -> int | None:
-    global playedFlashcardID
-    return playedFlashcardID
 
 def getSourceValues(sourceID : int) -> tuple:
     cursor.execute(f'SELECT * FROM sources WHERE ID={sourceID}')

@@ -1,25 +1,17 @@
 from functions import *
 from browseFlashcards import browseFlashcards
 from viewScheme import viewScheme
-from todayStudy import todayStudyFlashcards
-from todaySourceSessions import seeTodaySessions
+from todayFlashcards import seeTodaySessions
 from toDoList import seeToDoList
 
 def makeMainWindow():
 
     MenuLayout = [
-        [sg.Button('Flashcards', key="flashcards", size=225)],
+        [sg.Button('Deck & Flashcards', key="browseFlashcards", size=225)],
         [sg.Button('Check deadlines', key="deadlines", size=225)],
         [sg.Button('Today source session', key="todayStudySource", size=225)],
         [sg.Button('To-Do List', key="todolist", size=225)],
         [sg.Button('Settings', key="settings", size=225)],
-    ]
-
-    FlashcardsLayout = [
-        [sg.Button('Browse', key="browseFlashcards", size=225)],
-        [sg.Button('Study', key="studyFlashcards", size=225)],
-        [sg.HorizontalSeparator()],
-        [sg.Button('Menu', key="EVENT_MENU_Flashcards", size=225)]
     ]
 
     DeadlinesLayout = [
@@ -35,11 +27,6 @@ def makeMainWindow():
         ],
         [sg.HorizontalSeparator()],
         [sg.Button('Menu', key="EVENT_MENU_Deadlines", size=225)]
-    ]
-
-    BooksLayout = [
-        [sg.HorizontalSeparator()],
-        [sg.Button('Menu', key="EVENT_MENU_Books", size=225)]
     ]
     
     studyDays = getSettingsValue('studyDays')
@@ -66,10 +53,8 @@ def makeMainWindow():
                 [sg.Menu(menuBar)],
                 [
                     sg.Column(MenuLayout, visible=True, key='Menu', justification="center", vertical_alignment="center"), 
-                    sg.Column(FlashcardsLayout, visible=False, key="Flashcards", justification="center"),
                     sg.Column(DeadlinesLayout, visible=False, key="Deadlines", justification="center"), 
                     sg.Column(SettingsLayout, visible=False, key="Settings", justification="center"),
-                    sg.Column(BooksLayout, visible=False, key="Books", justification="center")
                 ]
             ]
     
@@ -94,9 +79,6 @@ def makeMainWindow():
 
             if event == "settings":
                 FromTo('Menu', 'Settings', window)
-
-            if event == "books":
-                FromTo('Menu', 'Books', window)
             
             if event == "todolist":
                 seeToDoList()
@@ -107,42 +89,9 @@ def makeMainWindow():
 
             ### END BINDING MENULAYOUT EVENTS
 
-            ### START BINDING FLASHCARDSLAYOUT EVENTS
-            
-            if event == "studyFlashcards":
-                infoDecks = getInfoDecks()
-
-                window['studyDeck'].update(values=infoDecks)
-
-                setTableDeck(infoDecks)
-
-                FromTo('Flashcards', 'Deck', window)
-
-            ### END BINDING FLASHCARDSLAYOUT EVENTS
-
-            ### START BINDING DECKSLAYOUT EVENTS
-
-            if event == 'startDecks':
-                playedSourceID = getTableDeck()[values['studyDeck'][0]][0]
-
-                todayFlashcardsOfSource = getTodayFlashcardsSource(playedSourceID)
-
-                setFlashcardsArray(todayFlashcardsOfSource)
-                
-                while len(getFlashcardsArray()) > 0:
-                    state = todayStudyFlashcards()
-
-                    if state == "EXIT":
-                        break
-
-            ### END BINDING DECKSLAYOUT EVENTS
-
             ### EVENTS BACK BUTTONS
 
             if "EVENT_BACK" in event:
-                if event == "EVENT_BACK_StudyLayout":
-                    tableDeck = getInfoDecks()
-                    window['studyDeck'].update(values=tableDeck)
                 FromTo(getActualPage(), getPreviousPage(), window)
             
             ###
@@ -155,7 +104,6 @@ def makeMainWindow():
             ###
 
             
-
             ### MENU BUTTONS EVENT
 
             if "EVENT_MENU" in event:
@@ -185,13 +133,6 @@ def makeMainWindow():
                 
                 
                 FromTo(getActualPage(), 'Menu', window)
-            ###
-
-            ### SCHEME EVENTS
-
-            if event == "seeScheme":
-                viewScheme(flashcardID=getPlayedFlashcardID())
-            
             ###
    
     window.close()

@@ -7,7 +7,6 @@ def updateDeadline(
         values : dict, 
         studySlotsInfo : dict,
         isBook : bool = True, 
-        isVideo : bool = False
         ):
     if isBook:
         numberPagesStr = values['numberPages']
@@ -228,7 +227,7 @@ def updateSource(command : str ="NEW"):
             break
         
         if event is not None:
-            if event in ['numberPages', 'studiedPages'] and studySlotsInfo != {}:
+            if event in ['numberPages', 'entryStudiedPages']:
                 updateDeadline(isBook=isBook, window=window, values=values, studySlotsInfo=studySlotsInfo)
 
             if event == "STUDY_SLOTS":
