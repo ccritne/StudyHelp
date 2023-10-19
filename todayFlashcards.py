@@ -39,6 +39,7 @@ def seeTodaySessions():
                     window['infoDecks'].update(values=getTableDeck())
                     if state == "EXIT":
                         break
+                
 
         ### END BINDING DECKSLAYOUT EVENTS  
 

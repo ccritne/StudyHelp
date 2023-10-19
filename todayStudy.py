@@ -59,7 +59,7 @@ def todayStudyFlashcards() -> str:
                 newBox = 0 
                 deadlineStr = datetime.now().strftime('%Y-%m-%d')
                 if event == 'advanceBox':
-                    deadlineStr = (datetime.now() + timedelta(days=pow(2, getFlashcardsArray()[0][3]))).strftime("%d-%m-%Y")
+                    deadlineStr = (datetime.now() + timedelta(days=pow(2, getFlashcardsArray()[0][3]))).strftime("%Y-%m-%d")
                     newBox = getFlashcardsArray()[0][3] + 1
                     removeFlashcard(0)
                 else:

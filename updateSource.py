@@ -133,11 +133,7 @@ def updateSource(command : str ="NEW"):
     defaultTotalPages = 100
     defaultStudiedPages = 0
 
-    defaultTotalMinutes = 30
-    defaultViewedMinutes = 0
-
     defaultPathfile = ""
-    defaultUrl = ""
 
     defaultDeadline = "Insert sessions!"
 
@@ -290,7 +286,7 @@ def updateSource(command : str ="NEW"):
                                 
                                 deadline = calculateDeadline(isBook=isBook, arrSessionWeek=studySlotsInfo, totalPages=numberPages, studiedPages=studiedPages)
 
-                                parameters = (nameBook, courseName, numberPages, studiedPages, filename, str(studySlotsInfo), deadline)
+                                parameters = (nameBook, courseName, numberPages, studiedPages, filename, str(studySlotsInfo), getStringDate(deadline))
 
                                 if command == 'MODIFY':
                                     parameters = parameters + (getSelectedSourceID(), )

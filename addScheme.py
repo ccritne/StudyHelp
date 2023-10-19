@@ -17,7 +17,7 @@ def updateScheme(flashcardID : int) -> (str, str):
         
         if event in [sg.WIN_CLOSED, 'Exit']:
             filename = ""
-            exitMessage = 'EXIT'
+            exitMessage = 'EXIT_WINDOW'
             break
 
         if event == ['SaveScheme']:
