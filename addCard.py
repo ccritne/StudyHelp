@@ -7,7 +7,7 @@ def addCard():
                 [
                     [sg.Column([[sg.Button('Latex', key='addLatex')]], justification='right')],
                     [sg.Text('Front', size=(10,1)), sg.InputText(key='frontInput', expand_x=True, enable_events=True)],
-                    [sg.Text('Back', size=(10,1)), sg.InputText(key='backInput', expand_x=True, enable_events=True)],
+                    [sg.Text('Back', size=(10,1)), sg.Multiline(key='backInput', expand_x=True, enable_events=True, size=(100, 8))],
                     [sg.Text('Document', size=(10,1)), sg.InputText(key="filenameScheme"), sg.FileBrowse(file_types=(('Image Portable Network Graphics', 'png'),))],
                     [sg.Button('Save', key="saveNewFlashcard"), sg.Button('Preview', key="previewNewCard")],
                 ]
@@ -15,6 +15,7 @@ def addCard():
     
     window = sg.Window("Add new card", layout=layout, modal=True, finalize=True, keep_on_top=True)
     window['frontInput'].bind("<Button-1>", "_LClick")
+    window['frontInput'].bind("<Tab>", "_Tab")
     window['backInput'].bind("<Button-1>", "_LClick")
 
     while True:
@@ -23,12 +24,11 @@ def addCard():
             break
         
         if event is not None:
-
             if event == 'frontInput_LClick':
                 setBackInputSelected(False)
                 setFrontInputSelected(True)
 
-            if event == 'backInput_LClick':
+            if event == 'backInput_LClick' or event == 'frontInput_Tab':
                 setFrontInputSelected(False)
                 setBackInputSelected(True)
 

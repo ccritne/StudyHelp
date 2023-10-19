@@ -174,7 +174,7 @@ def browseFlashcards():
     flashcardInputs = [       
                             [sg.Column([[sg.Button('Latex', key='addLatex')]], justification='right')],
                             [sg.Text('Front'), sg.InputText(default_text=frontDefaultText, key='frontInput', expand_x=True, enable_events=True, size=(100, 1))],
-                            [sg.Text('Back'), sg.InputText(default_text=backDefaultText, key='backInput', expand_x=True, enable_events=True, size=(100, 1))],
+                            [sg.Text('Back'), sg.Multiline(default_text=backDefaultText, key='backInput', expand_x=True, enable_events=True, size=(100, 8))],
                             [sg.Button('Save', key="saveFlashcard"), sg.Button('View Scheme', key="viewScheme"), sg.Button('Preview', key="previewCard")],
                     ]
 
@@ -190,7 +190,12 @@ def browseFlashcards():
     ]
 
     window = sg.Window(title="Decks & Flashcards", layout=layout, modal=True, finalize=True)
-    
+    window['frontInput'].bind("<Return>", "_Enter")
+    window['backInput'].bind("<Return>", "_Enter")
+    window['frontInput'].bind("<Button-1>", "_LClick")
+    window['frontInput'].bind("<Tab>", "_Tab")
+    window['backInput'].bind("<Button-1>", "_LClick")
+
     if len(sourcesNames) > 0:
         setRowSources(row=0)
         updateSelectedSource(window=window, row=0)
@@ -248,7 +253,7 @@ def browseFlashcards():
                 setBackInputSelected(False)
                 setFrontInputSelected(True)
 
-            if event == 'backInput_LClick':
+            if event == 'backInput_LClick' or event == 'frontInput_Tab':
                 setFrontInputSelected(False)
                 setBackInputSelected(True)
 
@@ -264,7 +269,7 @@ def browseFlashcards():
                     
                 if getBackInputSelected():
                     key = 'backInput'
-                
+                                
                 if key is not None:
                     widget = window[key].Widget
                     cursor_pointer = widget.index(INSERT)
@@ -329,10 +334,6 @@ def browseFlashcards():
                 window['tableFlashcards'].Widget.see(len(getFlashcardsArray()))
                 if not condLayoutFlashcardsVisible:
                     condLayoutFlashcardsVisible = True
-                    window['frontInput'].bind("<Return>", "_Enter")
-                    window['backInput'].bind("<Return>", "_Enter")
-                    window['frontInput'].bind("<Button-1>", "_LClick")
-                    window['backInput'].bind("<Button-1>", "_LClick")
 
             
             if event == "Delete card":
