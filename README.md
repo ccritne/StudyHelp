@@ -68,4 +68,8 @@ This software is distributed under the MIT License. You are free to use, modify,
 
 ---
 
+<<<<<<< HEAD
 Happy reading and studying with StudyHelp's user-friendly GUI! If you have any questions, suggestions, or encounter issues, please feel free to reach out to our development team.
+=======
+Happy reading and studying with StudyHelp's user-friendly GUI! If you have any questions, suggestions, or encounter issues, please feel free to reach out to our development team.
+>>>>>>> 825102c55c49407129ca02fd5a49dc2f255daf7d
