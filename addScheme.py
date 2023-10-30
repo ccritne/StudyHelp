@@ -1,5 +1,20 @@
 from functions import *
+
+def saveScheme(flashcardID, values):
+    filename = values['filenameScheme']
+    exitMessage = 'EXIT_SUCCESS'
+
+    if existsFilename(filename):
+        query = f'UPDATE flashcards SET filenameScheme=? WHERE ID=?'
+        parameters = (filename, flashcardID)
+        cursor.execute(query, parameters)
+        con.commit()
+    else:
+        sg.popup_error('Path Wrong', keep_on_top=True, modal=True)
+        exitMessage = 'PATH_WRONG'
     
+    return exitMessage
+
 def updateScheme(flashcardID : int) -> (str, str):
 
     layout = [
@@ -20,17 +35,10 @@ def updateScheme(flashcardID : int) -> (str, str):
             exitMessage = 'EXIT_WINDOW'
             break
 
-        if event == ['SaveScheme']:
-            filename = values['filenameScheme']
-            if existsFilename(filename):
-                query = f'UPDATE flashcards SET filenameScheme=? WHERE ID=?'
-                parameters = (filename, flashcardID)
-                cursor.execute(query, parameters)
-                con.commit()
-                exitMessage = 'SUCCESS'
+        if event == 'SaveScheme':
+            if 'EXIT_SUCCESS' == saveScheme(flashcardID, values):
                 break
-            else:
-                sg.popup_error('Path Wrong', keep_on_top=True, modal=True)
+            
                 
     window.close()        
     

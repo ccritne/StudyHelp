@@ -10,9 +10,9 @@ def checkAddLectureSlot(indexDay: int, hour : int, minute: int, durationMinutes 
     condition = True
     for x in result:
         json = ast.literal_eval(x)
-        if json[weekdays[indexDay]]['areThereLectures']:
-            arrStartTime = json[weekdays[indexDay]]['timeLectures']['timeStartDateLecture'].split(':')
-            arrEndTime = json[weekdays[indexDay]]['timeLectures']['timeEndDateLecture'].split(':')
+        if json[WEEKDAYS[indexDay]]['areThereLectures']:
+            arrStartTime = json[WEEKDAYS[indexDay]]['timeLectures']['timeStartDateLecture'].split(':')
+            arrEndTime = json[WEEKDAYS[indexDay]]['timeLectures']['timeEndDateLecture'].split(':')
             minuteStart = int(arrStartTime[0])*60 + int(arrStartTime[1])
             minuteEnd = int(arrEndTime[0])*60 + int(arrEndTime[1])
             
@@ -37,7 +37,7 @@ def getSourceSlots(defaults : dict = None):
             defaultEndDate = defaults['endDateLectures']
     
     for x in range(7):
-        weekday = weekdays[x]
+        weekday = WEEKDAYS[x]
 
         defaultCheck = False
 
@@ -60,7 +60,7 @@ def getSourceSlots(defaults : dict = None):
                 defaultEndMinute = arrEnd[1]
 
         row = [
-                sg.Text(weekdays_complete[x], size=(15, 1)), 
+                sg.Text(FULL_WEEKDAYS[x], size=(15, 1)), 
                 sg.Checkbox("",key="CHECKBOX_"+(weekday), default=defaultCheck, enable_events=True),
                 sg.Column([
                         [
@@ -102,7 +102,7 @@ def getSourceSlots(defaults : dict = None):
                 sumOfLectures = 0
 
                 for x in range(7):
-                    if values["CHECKBOX_"+weekdays[x]]:
+                    if values["CHECKBOX_"+WEEKDAYS[x]]:
                         sumOfLectures += 1
 
                 if sumOfLectures > 0:
@@ -112,18 +112,18 @@ def getSourceSlots(defaults : dict = None):
                     infos['startDateLectures'] = values['startLectures']
                     infos['endDateLectures'] = values["endLectures"]
                     for x in range(7):
-                        infos[weekdays[x]] = {}
-                        if values["CHECKBOX_"+weekdays[x]]:
-                            infos[weekdays[x]]['areThereLectures'] = True
+                        infos[WEEKDAYS[x]] = {}
+                        if values["CHECKBOX_"+WEEKDAYS[x]]:
+                            infos[WEEKDAYS[x]]['areThereLectures'] = True
                             infos['weekRepsLectures'] += "1"
-                            infos[weekdays[x]]['timeLectures']={
-                                "timeStartDateLecture": values['START_HOUR_'+weekdays[x]]+":"+values['START_MINUTE_'+weekdays[x]],
-                                "timeEndDateLecture": values['END_HOUR_'+weekdays[x]]+":"+values['END_MINUTE_'+weekdays[x]],
-                                "durationLecture": (int(values['END_HOUR_'+weekdays[x]])*60 + int(values['END_MINUTE_'+weekdays[x]])) - (int(values['START_HOUR_'+weekdays[x]])*60 + int(values['START_MINUTE_'+weekdays[x]]))
+                            infos[WEEKDAYS[x]]['timeLectures']={
+                                "timeStartDateLecture": values['START_HOUR_'+WEEKDAYS[x]]+":"+values['START_MINUTE_'+WEEKDAYS[x]],
+                                "timeEndDateLecture": values['END_HOUR_'+WEEKDAYS[x]]+":"+values['END_MINUTE_'+WEEKDAYS[x]],
+                                "durationLecture": (int(values['END_HOUR_'+WEEKDAYS[x]])*60 + int(values['END_MINUTE_'+WEEKDAYS[x]])) - (int(values['START_HOUR_'+WEEKDAYS[x]])*60 + int(values['START_MINUTE_'+WEEKDAYS[x]]))
                             }
                         else:
                             infos['weekRepsLectures'] += "0"
-                            infos[weekdays[x]]['areThereLectures'] = False
+                            infos[WEEKDAYS[x]]['areThereLectures'] = False
                 else:
                     infos['withLectures'] = False
 
@@ -253,17 +253,17 @@ def getStudySlots(
                 if defaults and defaults is not None:
                     infos = copy.copy(defaults)
 
-                    if 'areThereSessions' in defaults[weekdays[x]] and defaults[weekdays[x]]['areThereSessions'] and j < defaults[weekdays[x]]['amount']:
+                    if 'areThereSessions' in defaults[WEEKDAYS[x]] and defaults[WEEKDAYS[x]]['areThereSessions'] and j < defaults[WEEKDAYS[x]]['amount']:
                     
-                        defaultType = defaults[weekdays[x]]['types'][j]
+                        defaultType = defaults[WEEKDAYS[x]]['types'][j]
 
                         if isBook:
-                            defaultPages = defaults[weekdays[x]]['pages'][j]
-                            defaultDuration = defaults[weekdays[x]]['durations'][j]
+                            defaultPages = defaults[WEEKDAYS[x]]['pages'][j]
+                            defaultDuration = defaults[WEEKDAYS[x]]['durations'][j]
                             condType = True
 
                         if isVideo:
-                            defaultDuration = defaults[weekdays[x]]['minutes'][j]
+                            defaultDuration = defaults[WEEKDAYS[x]]['minutes'][j]
                             condType = False
 
                         if defaultType in ["Schematization"]:
@@ -271,15 +271,15 @@ def getStudySlots(
  
                 lyt =   [
                             sg.Frame(str(f"{j+1}° Session"), [
-                                [ sg.Text('Pages: ', size=(12, 1), visible=condType, key=f"TEXT_PAGES_{j}_SESSION_{weekdays[x]}"), sg.InputText(default_text=defaultPages, key=f'INPUT_TEXT_PAGES_{j}_SESSION_{weekdays[x]}', size=(5, 1), visible=condType)],
-                                [ sg.Text('Type: ', size=(12, 1)), sg.Combo(comboSelection, size=(13, 1), default_value=defaultType, key=f'COMBO_TYPE_{j}_SESSION_{weekdays[x]}', enable_events=True)],
-                                [ sg.Text('Duration: ', size=(12, 1)), sg.Combo([x for x in range(1, 61, 1)], default_value=defaultDuration, tooltip="Minutes", key=f'INPUT_TEXT_DURATION_{j}_SESSION_{weekdays[x]}', size=(3, 1), readonly=True)]
+                                [ sg.Text('Pages: ', size=(12, 1), visible=condType, key=f"TEXT_PAGES_{j}_SESSION_{WEEKDAYS[x]}"), sg.InputText(default_text=defaultPages, key=f'INPUT_TEXT_PAGES_{j}_SESSION_{WEEKDAYS[x]}', size=(5, 1), visible=condType)],
+                                [ sg.Text('Type: ', size=(12, 1)), sg.Combo(comboSelection, size=(13, 1), default_value=defaultType, key=f'COMBO_TYPE_{j}_SESSION_{WEEKDAYS[x]}', enable_events=True)],
+                                [ sg.Text('Duration: ', size=(12, 1)), sg.Combo([x for x in range(1, 61, 1)], default_value=defaultDuration, tooltip="Minutes", key=f'INPUT_TEXT_DURATION_{j}_SESSION_{WEEKDAYS[x]}', size=(3, 1), readonly=True)]
                             ])
                         ]
                 
                 row.append(lyt)
 
-            frame = [sg.Frame(weekdays_complete[x], row)]
+            frame = [sg.Frame(FULL_WEEKDAYS[x], row)]
             rows.append(frame)
     
     column = sg.Column(rows, scrollable=True, vertical_scroll_only=True, size=(None, 350))
@@ -326,62 +326,62 @@ def getStudySlots(
 
                 for x in range(7):
                     condErrorHoursIndex = False
-                    infos[weekdays[x]] = {}
+                    infos[WEEKDAYS[x]] = {}
                     if studyDays[x]:
-                        infos[weekdays[x]]['isStudyDay'] = True
-                        infos[weekdays[x]]['areThereSessions'] = False
+                        infos[WEEKDAYS[x]]['isStudyDay'] = True
+                        infos[WEEKDAYS[x]]['areThereSessions'] = False
                         if arrAmount[x] > 0:
-                            infos[weekdays[x]]['areThereSessions'] = True
-                            infos[weekdays[x]]['amount'] = arrAmount[x]
-                            infos[weekdays[x]]['types'] = []
-                            infos[weekdays[x]]['durations'] = []
+                            infos[WEEKDAYS[x]]['areThereSessions'] = True
+                            infos[WEEKDAYS[x]]['amount'] = arrAmount[x]
+                            infos[WEEKDAYS[x]]['types'] = []
+                            infos[WEEKDAYS[x]]['durations'] = []
                             
                             if isBook:
-                                infos[weekdays[x]]['pages'] = []
-                                infos[weekdays[x]]['totalPages'] = 0
+                                infos[WEEKDAYS[x]]['pages'] = []
+                                infos[WEEKDAYS[x]]['totalPages'] = 0
 
-                            infos[weekdays[x]]['totalDuration'] = 0
+                            infos[WEEKDAYS[x]]['totalDuration'] = 0
                             for j in range(arrAmount[x]):
                                 if isBook:
-                                    pages = int(values[f'INPUT_TEXT_PAGES_{j}_SESSION_{weekdays[x]}'])
-                                    typeStudy = values[f'COMBO_TYPE_{j}_SESSION_{weekdays[x]}']
+                                    pages = int(values[f'INPUT_TEXT_PAGES_{j}_SESSION_{WEEKDAYS[x]}'])
+                                    typeStudy = values[f'COMBO_TYPE_{j}_SESSION_{WEEKDAYS[x]}']
 
                                     if typeStudy in ['Schematization']:
                                         pages = 0
                                     
-                                    infos[weekdays[x]]['pages'].append(pages)
-                                    infos[weekdays[x]]['totalPages'] += pages
+                                    infos[WEEKDAYS[x]]['pages'].append(pages)
+                                    infos[WEEKDAYS[x]]['totalPages'] += pages
                                     infos['totalPages'] += pages
                                 else:
-                                    minutes = int(values[f'INPUT_TEXT_DURATION_{j}_SESSION_{weekdays[x]}'])
-                                    typeStudy = values[f'COMBO_TYPE_{j}_SESSION_{weekdays[x]}']
+                                    minutes = int(values[f'INPUT_TEXT_DURATION_{j}_SESSION_{WEEKDAYS[x]}'])
+                                    typeStudy = values[f'COMBO_TYPE_{j}_SESSION_{WEEKDAYS[x]}']
 
                                     if typeStudy in ['Schematization']:
                                         minutes = 0
 
-                                    infos[weekdays[x]]['minutes'].append(minutes)
-                                    infos[weekdays[x]]['totalMinutes'] += minutes
+                                    infos[WEEKDAYS[x]]['minutes'].append(minutes)
+                                    infos[WEEKDAYS[x]]['totalMinutes'] += minutes
                                     infos['totalMinutes'] += minutes
 
-                                duration = int(values[f'INPUT_TEXT_DURATION_{j}_SESSION_{weekdays[x]}'])
-                                infos[weekdays[x]]['types'].append(values[f'COMBO_TYPE_{j}_SESSION_{weekdays[x]}'])
-                                infos[weekdays[x]]['durations'].append(duration)
-                                infos[weekdays[x]]['totalDuration'] += duration
+                                duration = int(values[f'INPUT_TEXT_DURATION_{j}_SESSION_{WEEKDAYS[x]}'])
+                                infos[WEEKDAYS[x]]['types'].append(values[f'COMBO_TYPE_{j}_SESSION_{WEEKDAYS[x]}'])
+                                infos[WEEKDAYS[x]]['durations'].append(duration)
+                                infos[WEEKDAYS[x]]['totalDuration'] += duration
                                 infos['totalDuration'] += duration  
 
                                 oldTotalMinutes = getTotalMinutes(x)
                                 if sourceID is not None:
                                     oldTotalMinutes = getTotalMinutes(x, exceptID=sourceID)
 
-                                newTotalMinutes = oldTotalMinutes + infos[weekdays[x]]['totalDuration']
+                                newTotalMinutes = oldTotalMinutes + infos[WEEKDAYS[x]]['totalDuration']
                                 totalHours = newTotalMinutes/60
 
                                 if totalHours > maxStudyHour and not condErrorHoursIndex:
                                     condErrorHours = True
                                     condErrorHoursIndex = True
-                                    errorTextHours += "You have to correct " + weekdays_complete[x] + " sessions. Your hour amounts is " + f'{totalHours:.2f}.\n'  
+                                    errorTextHours += "You have to correct " + FULL_WEEKDAYS[x] + " sessions. Your hour amounts is " + f'{totalHours:.2f}.\n'  
                     else:
-                        infos[weekdays[x]]['isStudyDay'] = False
+                        infos[WEEKDAYS[x]]['isStudyDay'] = False
                 
                 if True in [condErrorHours]:
                     if condErrorHours:

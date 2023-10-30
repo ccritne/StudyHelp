@@ -2,18 +2,17 @@ from functions import *
 from viewScheme import viewScheme
 from preview import previewCard
 from updateSource import updateSource
-from addCard import addCard
-from tkinter import *
+from addCard import addCard    
 
 def updateFlashcardsInputs(window : sg.Window, front : str, back : str):
     if len(getFlashcardsArray())>0:
         window['flashcardInputs'].update(visible=True)
-        window['frontInput'].update(value=front)
-        window['backInput'].update(value=back)
+        window['front'].update(value=front)
+        window['back'].update(value=back)
     else:
         window['flashcardInputs'].update(visible=False)
-        window['frontInput'].update(value="")
-        window['backInput'].update(value="")
+        window['front'].update(value="")
+        window['back'].update(value="")
 
 def updateSelectedSource(window : sg.Window, row : int):
 
@@ -116,7 +115,6 @@ def browseFlashcards():
     else:
         condLayoutFlashcardsVisible = False
 
-
     setSourcesArray(sourcesNames)
 
     flashcardsArr = getFlashcardsArray()
@@ -138,7 +136,7 @@ def browseFlashcards():
                                 right_click_menu=right_click_sources
                                 )
     
-    right_click_flashcards = ['Flashcards', ['Add card', 'Delete card', 'Reschedule expired cards', 'Change box']]
+    right_click_flashcards = ['Flashcards', ['Add card', 'Delete card', 'Reschedule expired cards']]
 
     flashcardsTable = sg.Table(
                                 values=flashcardsArr if flashcardsArr is not None else [[]], 
@@ -154,8 +152,6 @@ def browseFlashcards():
                                 row_height=20,
                                 right_click_menu=right_click_flashcards
                             )
-
-
 
     menuBar = [
         ['File', 'Exit'],
@@ -173,8 +169,8 @@ def browseFlashcards():
 
     flashcardInputs = [       
                             [sg.Column([[sg.Button('Latex', key='addLatex')]], justification='right')],
-                            [sg.Text('Front'), sg.InputText(default_text=frontDefaultText, key='frontInput', expand_x=True, enable_events=True, size=(100, 1))],
-                            [sg.Text('Back'), sg.Multiline(default_text=backDefaultText, key='backInput', expand_x=True, enable_events=True, size=(100, 8))],
+                            [sg.Text('Front'), sg.InputText(default_text=frontDefaultText, key='front', expand_x=True, enable_events=True, size=(100, 1))],
+                            [sg.Text('Back'), sg.Multiline(default_text=backDefaultText, key='back', expand_x=True, enable_events=True, size=(100, 8))],
                             [sg.Button('Save', key="saveFlashcard"), sg.Button('View Scheme', key="viewScheme"), sg.Button('Preview', key="previewCard")],
                     ]
 
@@ -190,11 +186,11 @@ def browseFlashcards():
     ]
 
     window = sg.Window(title="Decks & Flashcards", layout=layout, modal=True, finalize=True)
-    window['frontInput'].bind("<Return>", "_Enter")
-    window['backInput'].bind("<Return>", "_Enter")
-    window['frontInput'].bind("<Button-1>", "_LClick")
-    window['frontInput'].bind("<Tab>", "_Tab")
-    window['backInput'].bind("<Button-1>", "_LClick")
+    window['front'].bind("<Return>", "_Enter")
+    window['back'].bind("<Return>", "_Enter")
+    window['front'].bind("<Button-1>", "_LClick")
+    window['front'].bind("<Tab>", "_Tab")
+    window['back'].bind("<Button-1>", "_LClick")
 
     if len(sourcesNames) > 0:
         setRowSources(row=0)
@@ -219,6 +215,8 @@ def browseFlashcards():
                         setRowSources(row=row)
                         updateSelectedSource(window=window, row=row)
                     case "tableFlashcards":
+                        setFrontInputSelected(False)
+                        setBackInputSelected(False)
                         setRowFlashcards(row=row)
                         updateSelectedFlashcards(window=window, row=row)
 
@@ -233,49 +231,18 @@ def browseFlashcards():
 
             ### EVENTS FOR FLASHCARD CHANGES 
 
-            if event in ["frontInput_Enter", "backInput_Enter", "saveFlashcard"]:
-                query = "UPDATE flashcards SET front = ?, back = ? WHERE ID = ?"
-                
-                front = values['frontInput']
-                back = values['backInput']
-                flashcardID = getSelectedFlashcardID()
-                
-                parameters = (front, back, flashcardID)
-
-                cursor.execute(query, parameters)
-                con.commit()
-
+            if event in ["front_Enter", "back_Enter", "saveFlashcard"]:
+                updateFlashcard(flashcardID=getSelectedFlashcardID(), front=values['front'], back=values['back'])
                 updateFlashcardsTable(window)
                 updateSelectedFlashcards(window, getRowFlashcards())
 
-
-            if event == 'frontInput_LClick':
-                setBackInputSelected(False)
-                setFrontInputSelected(True)
-
-            if event == 'backInput_LClick' or event == 'frontInput_Tab':
-                setFrontInputSelected(False)
-                setBackInputSelected(True)
-
-            if event == 'previewCard':
-                textFront = values['frontInput']
-                textBack = values['backInput']
-                previewCard(textFront=textFront, textBack=textBack)
+            checkInputClick(event)
 
             if event == 'addLatex':
-                key = None
-                if getFrontInputSelected():
-                    key = 'frontInput'
-                    
-                if getBackInputSelected():
-                    key = 'backInput'
-                                
-                if key is not None:
-                    widget = window[key].Widget
-                    cursor_pointer = widget.index(INSERT)
-                    newText = values[key][:cursor_pointer] + "[latex][/latex]" + values[key][cursor_pointer:]
-                    window[key].update(value=newText)
-                    widget.icursor(cursor_pointer+7)
+                addLatexToInputField(window)
+
+            if event == 'previewCard':
+                previewCard(textFront=values['front'], textBack=values['back'])
 
             ###
 
@@ -290,7 +257,7 @@ def browseFlashcards():
             if event in ["Add source", "Modify source"]:
 
                 if event == "Add source":
-                    updateSource()
+                    updateSource("NEW")
                 if event == "Modify source":
                     updateSource("MODIFY")
 
@@ -353,10 +320,6 @@ def browseFlashcards():
                 updateFlashcardsTable(window)
                 updateSelectedFlashcards(window, 0)
                 window['tableFlashcards'].Widget.see(1)
-            
-            if event == "Change box":
-
-                continue
             
             ##
 

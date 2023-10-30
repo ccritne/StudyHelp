@@ -26,8 +26,8 @@ selectedFlashcardID : int | None = None
 frontInputSelected : bool = False
 backInputSelected : bool = False
 
-weekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
-weekdays_complete = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+WEEKDAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+FULL_WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 selectedDate : datetime | str | None = None
 

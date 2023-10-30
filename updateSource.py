@@ -1,6 +1,6 @@
 from functions import *
 from studySlots import *
-from setup import weekdays
+from setup import WEEKDAYS
 
 def updateDeadline(
         window : sg.Window, 
@@ -51,15 +51,15 @@ def creationEvents(
     sql = "INSERT INTO CALENDAR(type, insertedDay, date, startSession, endSession, sourceID) VALUES \n"
 
     while iter <= days:
-        if studySlotsInfo[weekdays[indexWeek]]['isStudyDay'] and studySlotsInfo[weekdays[indexWeek]]['areThereSessions']: 
+        if studySlotsInfo[WEEKDAYS[indexWeek]]['isStudyDay'] and studySlotsInfo[WEEKDAYS[indexWeek]]['areThereSessions']: 
             iterDayStr = getStringDate(iterDay)
-            for x in range(studySlotsInfo[weekdays[indexWeek]]['amount']):
-                studyType = studySlotsInfo[weekdays[indexWeek]]['types'][x]
+            for x in range(studySlotsInfo[WEEKDAYS[indexWeek]]['amount']):
+                studyType = studySlotsInfo[WEEKDAYS[indexWeek]]['types'][x]
                 
                 sql += "('"+studyType+"', '"+insertDate+"', '"+iterDayStr+"'"
                 
                 startPage = lastPage
-                endPage = startPage + studySlotsInfo[weekdays[indexWeek]]['pages'][x]
+                endPage = startPage + studySlotsInfo[WEEKDAYS[indexWeek]]['pages'][x]
                 lastPage = endPage
 
                 if  studyType in ["Schematization"]:
@@ -93,8 +93,8 @@ def creationEvents(
         indexWeek = iterDay.weekday()
 
         while iter <= days:
-            if studySlotsInfo[weekdays[indexWeek]]['areThereLectures']:
-                sql += "('Lecture', '"+insertDate+"','"+getStringDate(iterDay)+"', '"+studySlotsInfo[weekdays[indexWeek]]['timeLectures']['timeStartDateLecture']+"', '"+studySlotsInfo[weekdays[indexWeek]]['timeLectures']['timeEndDateLecture']+"', "+str(lastID)+"),"
+            if studySlotsInfo[WEEKDAYS[indexWeek]]['areThereLectures']:
+                sql += "('Lecture', '"+insertDate+"','"+getStringDate(iterDay)+"', '"+studySlotsInfo[WEEKDAYS[indexWeek]]['timeLectures']['timeStartDateLecture']+"', '"+studySlotsInfo[WEEKDAYS[indexWeek]]['timeLectures']['timeEndDateLecture']+"', "+str(lastID)+"),"
 
             indexWeek += 1
 
@@ -119,7 +119,7 @@ def updateSource(command : str ="NEW"):
 
     defaultTodayDateStr = datetime.now().strftime('%Y-%m-%d')
     
-    sessions = ""
+    sessions = ["0", "0", "0", "0", "0", "0", "0"]
     
     buttonText = "ADD"
     windowTitle = "ADD NEW SOURCE"
@@ -157,10 +157,10 @@ def updateSource(command : str ="NEW"):
         defaultDeadline = updateDefaultValue(defaultDeadline, sourceValues, 6)
 
         for x in range(7):
-            if studySlotsInfo[weekdays[x]]['isStudyDay'] and studySlotsInfo[weekdays[x]]['areThereSessions']:
-                sessions += str(studySlotsInfo[weekdays[x]]['amount'])
+            if studySlotsInfo[WEEKDAYS[x]]['isStudyDay'] and studySlotsInfo[WEEKDAYS[x]]['areThereSessions']:
+                sessions[x] = str(studySlotsInfo[WEEKDAYS[x]]['amount'])
             else:
-                sessions += "0"
+                sessions[x] = "0"
 
 
         withLectures = studySlotsInfo['withLectures']
@@ -183,15 +183,15 @@ def updateSource(command : str ="NEW"):
             remainingMinutes = maxStudyHour*60 - totalMinutes
             
             row = [
-                    sg.Text(text=weekdays[x], size=(5, 1)), 
+                    sg.Text(text=WEEKDAYS[x], size=(5, 1)), 
                     sg.InputText(
                         size=(10, 1), 
                         justification="center", 
                         default_text=sessions[x], 
                         enable_events=True, 
-                        key='INPUT_TEXT_SESSIONS_'+weekdays[x], 
+                        key='INPUT_TEXT_SESSIONS_'+WEEKDAYS[x], 
                         ),
-                    sg.Text(text=remainingMinutes, size=(10, 1), justification="center", key="DISPLAY_TIME_REMAINING_"+weekdays[x]),
+                    sg.Text(text=remainingMinutes, size=(10, 1), justification="center", key="DISPLAY_TIME_REMAINING_"+WEEKDAYS[x]),
                 ]
             columnGroup.append(row)
 
@@ -234,7 +234,7 @@ def updateSource(command : str ="NEW"):
 
                 for x in range(7):
                     if studyDays[x]:
-                        amount = int(values[f"INPUT_TEXT_SESSIONS_{weekdays[x]}"])
+                        amount = int(values[f"INPUT_TEXT_SESSIONS_{WEEKDAYS[x]}"])
                         arrAmounts.append(amount)
                         bookStudyDays.append(True)
                         sumOfAmount += amount
@@ -251,12 +251,12 @@ def updateSource(command : str ="NEW"):
                     updateDeadline(isBook=isBook, window=window, values=values, studySlotsInfo=studySlotsInfo)
 
                     for x in range(7):
-                        if studySlotsInfo[weekdays[x]]['isStudyDay'] and studySlotsInfo[weekdays[x]]['areThereSessions']:
+                        if studySlotsInfo[WEEKDAYS[x]]['isStudyDay'] and studySlotsInfo[WEEKDAYS[x]]['areThereSessions']:
                             maxStudyHour = getSettingsValue('maxStudyHour')
-                            totalMinutes = getTotalMinutes(x, exceptID=getSelectedSourceID()) + studySlotsInfo[weekdays[x]]['totalDuration']
+                            totalMinutes = getTotalMinutes(x, exceptID=getSelectedSourceID()) + studySlotsInfo[WEEKDAYS[x]]['totalDuration']
                             remainingMinutes = maxStudyHour*60 - totalMinutes 
 
-                            window['DISPLAY_TIME_REMAINING_'+weekdays[x]].update(value=remainingMinutes)
+                            window['DISPLAY_TIME_REMAINING_'+WEEKDAYS[x]].update(value=remainingMinutes)
 
                 else:
                     sg.popup_ok('Insert almost one session!', title="WARNING", keep_on_top=True, modal=True)
@@ -324,16 +324,16 @@ def updateSource(command : str ="NEW"):
                     studySlotsInfo['startDateLectures'] = sourceSlotsInfo['startDateLectures']
                     studySlotsInfo['endDateLectures'] = sourceSlotsInfo['endDateLectures']
                     for x in range(7):
-                        if weekdays[x] not in studySlotsInfo:
-                            studySlotsInfo[weekdays[x]] = {}
+                        if WEEKDAYS[x] not in studySlotsInfo:
+                            studySlotsInfo[WEEKDAYS[x]] = {}
 
-                        studySlotsInfo[weekdays[x]]['areThereLectures'] = sourceSlotsInfo[weekdays[x]]['areThereLectures']
+                        studySlotsInfo[WEEKDAYS[x]]['areThereLectures'] = sourceSlotsInfo[WEEKDAYS[x]]['areThereLectures']
 
-                        if weekdays[x] in sourceSlotsInfo and sourceSlotsInfo[weekdays[x]]['areThereLectures']:
-                            studySlotsInfo[weekdays[x]]['timeLectures'] = {
-                                'timeStartDateLecture': sourceSlotsInfo[weekdays[x]]['timeLectures']['timeStartDateLecture'], 
-                                'timeEndDateLecture': sourceSlotsInfo[weekdays[x]]['timeLectures']['timeEndDateLecture'], 
-                                'durationLecture': sourceSlotsInfo[weekdays[x]]['timeLectures']['durationLecture']
+                        if WEEKDAYS[x] in sourceSlotsInfo and sourceSlotsInfo[WEEKDAYS[x]]['areThereLectures']:
+                            studySlotsInfo[WEEKDAYS[x]]['timeLectures'] = {
+                                'timeStartDateLecture': sourceSlotsInfo[WEEKDAYS[x]]['timeLectures']['timeStartDateLecture'], 
+                                'timeEndDateLecture': sourceSlotsInfo[WEEKDAYS[x]]['timeLectures']['timeEndDateLecture'], 
+                                'durationLecture': sourceSlotsInfo[WEEKDAYS[x]]['timeLectures']['durationLecture']
                             }
 
 

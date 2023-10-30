@@ -10,6 +10,7 @@ import ast
 import textwrap
 import base64
 import os
+from tkinter import *
 
 def changePreviousPage(oldPage : str):
     global previousPage
@@ -56,8 +57,8 @@ def calculateDeadline(
     daysToAdd = 0
 
     while todayIndex < 7:
-        if arrSessionWeek[weekdays[todayIndex]]['isStudyDay'] and arrSessionWeek[weekdays[todayIndex]]['areThereSessions']:
-            remaining -= min(arrSessionWeek[weekdays[todayIndex]][indexStr], remaining)
+        if arrSessionWeek[WEEKDAYS[todayIndex]]['isStudyDay'] and arrSessionWeek[WEEKDAYS[todayIndex]]['areThereSessions']:
+            remaining -= min(arrSessionWeek[WEEKDAYS[todayIndex]][indexStr], remaining)
         
         todayIndex += 1
         if remaining > 0:
@@ -82,8 +83,8 @@ def calculateDeadline(
     daysToAdd = 0
     while remaining > 0:
 
-        if arrSessionWeek[weekdays[todayIndex]]['isStudyDay'] and arrSessionWeek[weekdays[todayIndex]]['areThereSessions']:
-            remaining -= min(arrSessionWeek[weekdays[todayIndex]][indexStr], remaining)
+        if arrSessionWeek[WEEKDAYS[todayIndex]]['isStudyDay'] and arrSessionWeek[WEEKDAYS[todayIndex]]['areThereSessions']:
+            remaining -= min(arrSessionWeek[WEEKDAYS[todayIndex]][indexStr], remaining)
         
         if todayIndex < 6:
             todayIndex += 1
@@ -157,14 +158,25 @@ def getSettingsValue(value : str) -> str | int:
     return cursor.fetchone()[0]
 
 def render_latex(formula : str, fontsize : int = 12, dpi : int = 300, format_ : str='png') -> bytes:
-    """Renders LaTeX formula into image.
-    """
-    fig = plt.figure(figsize=(0.01, 0.01))
-    fig.text(0, 0, u'${}$'.format(formula), fontsize=fontsize)
-    buffer_ = BytesIO()
-    fig.savefig(buffer_, dpi=dpi, transparent=False, format=format_, bbox_inches='tight', pad_inches=0.0)
+    
+    # Create a figure with the specified size and add the LaTeX formula
+    fig, ax = plt.subplots(figsize=(0.01, 0.01))
+    ax.text(0, 0, u'${}$'.format(formula), fontsize=fontsize)
+    
+    # Save the figure to a BytesIO buffer
+    buffer = BytesIO()
+    fig.savefig(
+        buffer,
+        dpi=dpi,
+        transparent=False,
+        format=format_,
+        bbox_inches='tight',
+        pad_inches=0.0
+    )
+    
+    # Close the figure and return the image data
     plt.close(fig)
-    return buffer_.getvalue()
+    return buffer.getvalue()
 
 def setSelectedSourceID(id : int | None):
     global selectedSourceID
@@ -251,10 +263,10 @@ def getTotalMinutes(indexDay, exceptID=None):
     totalMinutes = 0
     for x in result:
         json = ast.literal_eval(x[0])
-        if json[weekdays[indexDay]]['isStudyDay'] and json[weekdays[indexDay]]['areThereSessions']:
-            totalMinutes += json[weekdays[indexDay]]['totalDuration']
-        if json['withLectures'] and json[weekdays[indexDay]]['areThereLectures']:
-            totalMinutes += json[weekdays[indexDay]]['timeLectures']['durationLecture']
+        if json[WEEKDAYS[indexDay]]['isStudyDay'] and json[WEEKDAYS[indexDay]]['areThereSessions']:
+            totalMinutes += json[WEEKDAYS[indexDay]]['totalDuration']
+        if json['withLectures'] and json[WEEKDAYS[indexDay]]['areThereLectures']:
+            totalMinutes += json[WEEKDAYS[indexDay]]['timeLectures']['durationLecture']
 
     return totalMinutes
 
@@ -320,43 +332,35 @@ def getBackLayout() -> list:
     global backLayout
     return backLayout
 
-def fromTextToElements(text : str):
+def fromTextToElements(text: str):
     elements = []
-
-    startLatex = False
-    stringLatex = ""
     normalString = ""
 
     x = 0
     while x < len(text):
-
-        if x + 6 < len(text) and text[x:x+7] == '[latex]':
-            if len(normalString)> 0 :
+        if text[x:x+7] == '[latex]':
+            if normalString:
                 elements.append([sg.Text(text=textwrap.fill(normalString), expand_x=True)])
             normalString = ""
-            startLatex = True
             x += 7
 
-        if x + 7 < len(text) and text[x:x+8] == '[/latex]':
-
-            if len(stringLatex)> 0 : 
-                image_bytes = render_latex(stringLatex)
-                image_base64 = base64.b64encode(image_bytes)
-                elements.append([sg.Column([[sg.Image(source=image_base64)]])])
-            startLatex = False
-            stringLatex = ""
+        elif text[x:x+8] == '[/latex]':
+            if normalString:
+                elements.append([sg.Text(text=textwrap.fill(normalString), expand_x=True)])
+            normalString = ""
+            latex_content = text[x-7:x]
+            image_bytes = render_latex(latex_content)
+            image_base64 = base64.b64encode(image_bytes)
+            elements.append([sg.Column([[sg.Image(data=image_base64)]])])
             x += 8
 
-        if x < len(text):
-            if startLatex:
-                stringLatex += text[x]
-            else:
-                normalString += text[x]
+        else:
+            normalString += text[x]
             x += 1
 
-    if len(normalString)> 0:
-        elements.append([sg.Text(textwrap.fill(normalString), expand_x=True)])
-    
+    if normalString:
+        elements.append([sg.Text(text=textwrap.fill(normalString), expand_x=True)])
+
     return elements
 
 def fromNumberToTime(number : int) -> str:
@@ -381,3 +385,51 @@ def existsImg(img):
         return False
 
     return True
+
+def checkInputClick(event):
+    
+    if event == 'frontInput_LClick':
+        setBackInputSelected(False)
+        setFrontInputSelected(True)
+
+    if event == 'backInput_LClick' or event == 'frontInput_Tab':
+        setFrontInputSelected(False)
+        setBackInputSelected(True)
+
+
+def addLatexToInputField(window):
+    key = None
+    if getFrontInputSelected():
+        key = 'front'
+        
+    if getBackInputSelected():
+        key = 'back'
+    
+    if key is not None:
+        widget = window[key].Widget
+        cursor_position = widget.index(INSERT)
+        widget.insert(cursor_position, "[latex][/latex]")
+        widget.mark_set(INSERT, f"{cursor_position}+7c")
+
+def saveNewFlashcard(front, back, filename):
+    textFront = front
+    textBack = back
+    box = 0
+    deadline = datetime.now().strftime('%Y-%m-%d')
+    sourceID = getSelectedSourceID()
+    filenameScheme = filename
+
+    query = "INSERT INTO flashcards(front, back, box, deadline, sourceID, filenameScheme) VALUES (?, ?, ?, ?, ?, ?)"
+
+    parameters = (textFront, textBack, box, deadline, sourceID, filenameScheme)
+
+    cursor.execute(query, parameters)
+    con.commit()
+
+def updateFlashcard(flashcardID, front, back):
+    query = "UPDATE flashcards SET front = ?, back = ? WHERE ID = ?"
+    
+    parameters = (front, back, flashcardID)
+
+    cursor.execute(query, parameters)
+    con.commit()
