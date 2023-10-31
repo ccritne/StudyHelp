@@ -40,7 +40,7 @@ To get started with StudyHelp, follow these installation steps:
     ```
 3. Run the application:
    ```bash
-    python -B main.py
+    python -B StudyHelp.py
    ```
 
 You are now ready to start planning your book studies using the intuitive GUI!

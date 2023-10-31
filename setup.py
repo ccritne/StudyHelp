@@ -1,4 +1,3 @@
-import datetime
 from datetime import datetime
 import sqlite3
 
@@ -8,7 +7,7 @@ cursor = con.cursor()
 previousPage : str | None = None
 actualPage : str | None = None
 
-rowSources :int | None = None
+rowSources : int | None = None
 rowFlashcards : int | None = None
 
 sourcesNames : list = []

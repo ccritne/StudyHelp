@@ -1,4 +1,5 @@
-from functions import *
+import PySimpleGUI as sg
+from functions import checkInputClick, addLatexToInputField, saveNewFlashcard
 
 def addCard():
 

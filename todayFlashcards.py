@@ -1,4 +1,6 @@
-from functions import *
+import PySimpleGUI as sg
+from functions import getInfoDecks, setTableDeck, getTableDeck
+from functions import getTodayFlashcardsSource, setFlashcardsArray, getFlashcardsArray
 from todayStudy import todayStudyFlashcards
 
 def seeTodaySessions():

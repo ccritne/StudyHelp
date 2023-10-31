@@ -1,6 +1,10 @@
-from functions import *
-from studySlots import *
-from setup import WEEKDAYS
+import PySimpleGUI as sg
+from functions import checkStrIntInput, getStringDate, calculateDeadline
+from functions import getSelectedSourceID, getSettingsValue, getTotalMinutes, getSourceValues
+from studySlots import getStudySlots, getSourceSlots
+from setup import cursor, con, WEEKDAYS
+from datetime import datetime, timedelta
+import ast
 
 def updateDeadline(
         window : sg.Window, 

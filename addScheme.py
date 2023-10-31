@@ -1,19 +1,5 @@
-from functions import *
-
-def saveScheme(flashcardID, values):
-    filename = values['filenameScheme']
-    exitMessage = 'EXIT_SUCCESS'
-
-    if existsFilename(filename):
-        query = f'UPDATE flashcards SET filenameScheme=? WHERE ID=?'
-        parameters = (filename, flashcardID)
-        cursor.execute(query, parameters)
-        con.commit()
-    else:
-        sg.popup_error('Path Wrong', keep_on_top=True, modal=True)
-        exitMessage = 'PATH_WRONG'
-    
-    return exitMessage
+import PySimpleGUI as sg
+from functions import saveScheme
 
 def updateScheme(flashcardID : int) -> (str, str):
 

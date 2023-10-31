@@ -1,4 +1,6 @@
-from functions import *
+import PySimpleGUI as sg
+from functions import existsFilename, convert_to_bytes, existsImg
+from setup import cursor
 from addScheme import updateScheme
 
 def viewScheme(flashcardID : int):

@@ -1,4 +1,10 @@
-from functions import *
+import PySimpleGUI as sg
+from functions import getFlashcardsArray, setFrontLayout, setBackLayout 
+from functions import fromTextToElements, getFrontLayout, getBackLayout 
+from functions import appendFlashcard, removeFlashcard
+from setup import cursor, con
+from datetime import datetime, timedelta
+import copy
 from viewScheme import viewScheme
 
 def todayStudyFlashcards() -> str:

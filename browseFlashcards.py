@@ -1,83 +1,16 @@
-from functions import *
+import PySimpleGUI as sg
+from functions import allSourcesNames, setSelectedSourceID, setRowSources
+from functions import setSelectedFlashcardID, setRowFlashcards, setFlashcardsArray
+from functions import getFlashcardsForTable, setSourcesArray, getSourcesArray, updateSelectedFlashcards 
+from functions import updateSelectedSource, getFlashcardsArray, setFrontInputSelected, setBackInputSelected
+from functions import getSelectedFlashcardID, updateFlashcard, updateFlashcardsTable, getRowFlashcards, updateTables
+from functions import checkInputClick, addLatexToInputField, getSelectedSourceID
+from setup import cursor, con
 from viewScheme import viewScheme
 from preview import previewCard
 from updateSource import updateSource
-from addCard import addCard    
-
-def updateFlashcardsInputs(window : sg.Window, front : str, back : str):
-    if len(getFlashcardsArray())>0:
-        window['flashcardInputs'].update(visible=True)
-        window['front'].update(value=front)
-        window['back'].update(value=back)
-    else:
-        window['flashcardInputs'].update(visible=False)
-        window['front'].update(value="")
-        window['back'].update(value="")
-
-def updateSelectedSource(window : sg.Window, row : int):
-
-    sourceID = None
-    sourcesArr = getSourcesArray()
-
-    if row is not None and sourcesArr != []:
-        sourceID = sourcesArr[row][0]
-        window['tableSources'].update(select_rows=[row])
-    
-    setSelectedSourceID(sourceID)
-
-    updateFlashcardsTable(window)
-    updateSelectedFlashcards(window, 0)
-
-def updateFlashcardsTable(window : sg.Window):
-
-    sourceID = getSelectedSourceID()
-    
-    flashcardsArr = []
-
-    if sourceID is not None:
-        flashcardsArr = getFlashcardsForTable(sourceID)
-    
-    setFlashcardsArray(flashcardsArr)
-    
-    window['tableFlashcards'].update(values=flashcardsArr)
-
-def updateSourcesTable(window : sg.Window):
-
-    sourcesNames = allSourcesNames()
-
-    setSourcesArray(sourcesNames)
-        
-    window['tableSources'].update(values=sourcesNames)
-
-def updateSelectedFlashcards(window : sg.Window, row : int):
-    
-    flashcardsArr = getFlashcardsArray()
-
-    front = str()
-    back = str()
-
-    slFlashcardID = None
-    
-    if flashcardsArr != []:
-
-        if row > len(flashcardsArr):
-            row = 0
-            
-        slFlashcardID = flashcardsArr[row][0]
-        front = flashcardsArr[row][1]
-        back = flashcardsArr[row][2]
-        window['tableFlashcards'].update(select_rows=[row])
-        
-    setSelectedFlashcardID(slFlashcardID)
-    updateFlashcardsInputs(window=window, front=front, back=back)
-            
-def updateTables(window):
-
-    updateSourcesTable(window)
-    
-    updateSelectedSource(window, 0)
-
-    updateSelectedFlashcards(window, 0)
+from addCard import addCard
+from datetime import datetime
 
 def browseFlashcards():
 

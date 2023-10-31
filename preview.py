@@ -1,4 +1,5 @@
-from functions import *
+import PySimpleGUI as sg
+from functions import fromTextToElements
 
 def previewCard(textFront : str, textBack : str):
 
@@ -15,8 +16,8 @@ def previewCard(textFront : str, textBack : str):
     window = sg.Window('PreviewCard', size=(500, 400), layout=layout, keep_on_top=True, modal=True, finalize=True, resizable=True)
 
     while True:
-            event, values = window.read()
-            if event in (sg.WIN_CLOSED, 'Exit'):
-                break
+        event, values = window.read()
+        if event in (sg.WIN_CLOSED, 'Exit'):
+            break
 
     window.close()

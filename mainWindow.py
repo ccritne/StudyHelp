@@ -1,4 +1,6 @@
-from functions import *
+import PySimpleGUI as sg
+from functions import getSettingsValue, FromTo, getActualPage, getPreviousPage
+from setup import cursor, con
 from browseFlashcards import browseFlashcards
 from viewScheme import viewScheme
 from todayFlashcards import seeTodaySessions

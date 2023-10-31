@@ -1,4 +1,8 @@
-from functions import *
+import PySimpleGUI as sg
+from functions import fromNumberToTime, getSettingsValue, getTotalMinutes
+from setup import cursor, WEEKDAYS, FULL_WEEKDAYS
+import copy
+import ast
 
 def checkAddLectureSlot(indexDay: int, hour : int, minute: int, durationMinutes : int, exceptID: int = None):
     query = 'SELECT arrSessions FROM sources '
@@ -18,8 +22,6 @@ def checkAddLectureSlot(indexDay: int, hour : int, minute: int, durationMinutes 
             
             # !!! FIX FIX FIX I have to understand when I can convalidate a slot :D
             condPUSH = True
-
-
 
 def getSourceSlots(defaults : dict = None):
 
