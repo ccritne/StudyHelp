@@ -49,7 +49,6 @@ def calculateDeadline(
     
     indexStr = ''
 
-
     if isBook:
         remaining = totalPages - studiedPages
         indexStr = 'totalPages'
@@ -596,3 +595,15 @@ def creationDB():
     
     cursor.execute(SQL_CALENDAR)
     con.commit()
+
+def updateAllDeadlines():
+    SQL_SELECT = 'SELECT ID, numberPages, studiedPages, arrSessions FROM sources;'
+    cursor.execute(SQL_SELECT)
+    sources = cursor.fetchall()
+    for x in sources:
+        arrSessionWeek = ast.literal_eval(x[3])
+        upDeadline = getStringDate(calculateDeadline(totalPages=x[1], studiedPages=x[2], arrSessionWeek=arrSessionWeek, isBook=True))
+        SQL_UPDATE = 'UPDATE sources SET deadline = ? WHERE ID = ?;'
+        parameters = (upDeadline, x[0])
+        cursor.execute(SQL_UPDATE, parameters)
+        con.commit()
