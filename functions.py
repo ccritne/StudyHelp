@@ -524,3 +524,75 @@ def updateTables(window):
     updateSelectedSource(window, 0)
 
     updateSelectedFlashcards(window, 0)
+
+def creationDB():
+    SQL_SOURCES = ''' CREATE TABLE IF NOT EXISTS sources (
+                                    ID           INTEGER     NOT NULL
+                                                            UNIQUE,
+                                    courseName   TEXT,
+                                    name         TEXT        NOT NULL,
+                                    numberPages  INTEGER (5),
+                                    studiedPages INTEGER (5),
+                                    filename     TEXT,
+                                    deadline     TEXT (10),
+                                    arrSessions  TEXT,
+                                    insertDate   TEXT (10)   NOT NULL,
+                                    PRIMARY KEY (
+                                        ID AUTOINCREMENT
+                                    )
+                                ); '''
+    
+    cursor.execute(SQL_SOURCES)
+    con.commit()
+    
+    SQL_FLASHCARDS = '''CREATE TABLE IF NOT EXISTS flashcards (
+                                    ID             INTEGER     PRIMARY KEY AUTOINCREMENT
+                                                            NOT NULL,
+                                    front          TEXT        NOT NULL,
+                                    back           TEXT,
+                                    deadline       TEXT (10),
+                                    box            INTEGER (2) NOT NULL,
+                                    sourceID       INTEGER     NOT NULL,
+                                    filenameScheme TEXT
+                                );'''
+    
+    cursor.execute(SQL_FLASHCARDS)
+    con.commit()
+
+    SQL_SETTINGS = '''CREATE TABLE IF NOT EXISTS settings (
+                                    defaultHourNotification INTEGER (2) DEFAULT (15) 
+                                                                        UNIQUE ON CONFLICT IGNORE,
+                                    maxStudyHour            INTEGER (2) DEFAULT (8) 
+                                                                        UNIQUE ON CONFLICT IGNORE,
+                                    studyDays               TEXT (7)    DEFAULT [0000000]
+                                                                        UNIQUE ON CONFLICT IGNORE,
+                                    maxSubjectsDay          INTEGER (1) DEFAULT (1) 
+                                                                        UNIQUE ON CONFLICT IGNORE
+                                );'''
+    
+    cursor.execute(SQL_SETTINGS)
+    con.commit()
+
+    SQL_SETTINGS_DATA = '''INSERT INTO settings(defaultHourNotification, maxStudyHour, studyDays, maxSubjectsDay) VALUES (15, 8, '0000000', 1);'''
+    
+    cursor.execute(SQL_SETTINGS_DATA)
+    con.commit()
+
+    SQL_CALENDAR = '''CREATE TABLE IF NOT EXISTS calendar (
+                                    ID            INTEGER   NOT NULL,
+                                    type          TEXT,
+                                    description   TEXT,
+                                    insertedDay   TEXT (10) NOT NULL,
+                                    date          TEXT (10) NOT NULL,
+                                    timeStartDate TEXT (5),
+                                    timeEndDate   TEXT (5),
+                                    startSession  INTEGER,
+                                    endSession    INTEGER,
+                                    sourceID      INTEGER,
+                                    PRIMARY KEY (
+                                        ID AUTOINCREMENT
+                                    )
+                                );'''
+    
+    cursor.execute(SQL_CALENDAR)
+    con.commit()
