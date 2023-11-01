@@ -1,7 +1,7 @@
 from functions import *
 
 
-def AddCard():
+def add_card():
     layout = [
         [
             [sg.Column([[sg.Button("Latex", key="addLatex")]], justification="right")],
@@ -40,13 +40,13 @@ def AddCard():
             break
 
         if event is not None:
-            checkInputClick(event)
+            check_input_click(event)
 
             if event == "addLatex":
-                addLatexToInputField(window)
+                add_latex_to_input_field(window)
 
             if event == "saveNewFlashcard":
-                saveNewFlashcard(
+                save_new_flashcard(
                     front=values["front"],
                     back=values["back"],
                     filename=values["filename"],

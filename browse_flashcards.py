@@ -80,7 +80,7 @@ def update_tables(window):
     update_selected_flashcards(window, 0)
 
 
-def browseFlashcards():
+def browse_flashcards():
     cond_layout_flashcards_visible = True
 
     sources_names = all_sources_names()

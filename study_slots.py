@@ -326,7 +326,6 @@ def get_source_slots(defaults: dict = None):
 
 def get_study_slots(
     study_days: str,
-    ######################################################################################################################
     arr_amount: str,
     is_book: bool = True,
     is_video: bool = False,

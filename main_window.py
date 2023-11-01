@@ -1,8 +1,8 @@
 from functions import *
 from browse_flashcards import browse_flashcards
-from view_scheme import viewScheme
+from view_scheme import view_scheme
 from today_flashcards import see_today_sessions
-from to_do_list import seeToDoList
+from to_do_list import see_to_do_list
 
 
 def make_main_window():
@@ -157,7 +157,7 @@ def make_main_window():
                 from_to("Menu", "Settings", window)
 
             if event == "todolist":
-                seeToDoList()
+                see_to_do_list()
 
             if event == "todayStudySource":
                 see_today_sessions()

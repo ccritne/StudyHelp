@@ -1,31 +1,31 @@
 from functions import *
-from AddScheme import UpdateScheme
+from add_scheme import update_scheme
 
 
-def ViewScheme(flashcardID: int):
-    if flashcardID is not None:
-        cursor.execute(f"SELECT filenameScheme FROM flashcards WHERE ID={flashcardID}")
+def view_scheme(flashcard_ID: int):
+    if flashcard_ID is not None:
+        cursor.execute(f"SELECT filenameScheme FROM flashcards WHERE ID={flashcard_ID}")
 
         filename = cursor.fetchone()[0]
 
         img = None
 
-        condWindowVisible = True
+        cond_window_visible = True
 
-        if existsFilename(filename):
+        if exists_filename(filename):
             img = convert_to_bytes(filename, (800, 500))
 
-        while not existsImg(img):
-            filename, result = updateScheme(flashcardID=flashcardID)
+        while not exists_img(img):
+            filename, result = update_scheme(flashcard_ID=flashcard_ID)
 
             if result == "EXIT_WINDOW":
-                condWindowVisible = False
+                cond_window_visible = False
                 break
 
-            if existsFilename(filename):
+            if exists_filename(filename):
                 img = convert_to_bytes(filename, (800, 500))
 
-        if condWindowVisible:
+        if cond_window_visible:
             layout = [
                 [sg.Image(data=img, key="imgScheme", size=(800, 500))],
                 [sg.HorizontalSeparator()],
@@ -41,9 +41,9 @@ def ViewScheme(flashcardID: int):
 
                 if event is not None:
                     if event == "changeScheme":
-                        filename = updateScheme(flashcardID=flashcardID)
+                        filename = update_scheme(flashcard_ID=flashcard_ID)
 
-                        if existsFilename(filename):
+                        if exists_filename(filename):
                             img = convert_to_bytes(filename, (800, 500))
                             window["imgScheme"].update(data=img)
                         else:
