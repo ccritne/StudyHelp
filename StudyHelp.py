@@ -1,4 +1,4 @@
-from mainWindow import makeMainWindow
+from main_window import make_main_window
 
 if __name__ == "__main__":
-    makeMainWindow()
+    make_main_window()

@@ -1,22 +1,49 @@
 from functions import *
 
-def previewCard(textFront : str, textBack : str):
 
-    elementsFront = fromTextToElements(textFront)
-    elementsBack = fromTextToElements(textBack)
+def preview_card(text_front: str, text_back: str):
+    elements_front = from_text_to_elements(text_front)
+    elements_back = from_text_to_elements(text_back)
 
     layout = [
-        [sg.Text(text='Front: ')],
-        [sg.Column(elementsFront, scrollable=True, vertical_scroll_only=True, expand_x=True, expand_y=True, size=(None, 150), justification='center')],
-        [sg.Text(text='Back: ')],
-        [sg.Column(elementsBack, scrollable=True, vertical_scroll_only=True, expand_x=True, size=(None, 150), justification='center')],
+        [sg.Text(text="Front: ")],
+        [
+            sg.Column(
+                elements_front,
+                scrollable=True,
+                vertical_scroll_only=True,
+                expand_x=True,
+                expand_y=True,
+                size=(None, 150),
+                justification="center",
+            )
+        ],
+        [sg.Text(text="Back: ")],
+        [
+            sg.Column(
+                elements_back,
+                scrollable=True,
+                vertical_scroll_only=True,
+                expand_x=True,
+                size=(None, 150),
+                justification="center",
+            )
+        ],
     ]
 
-    window = sg.Window('PreviewCard', size=(500, 400), layout=layout, keep_on_top=True, modal=True, finalize=True, resizable=True)
+    window = sg.Window(
+        "PreviewCard",
+        size=(500, 400),
+        layout=layout,
+        keep_on_top=True,
+        modal=True,
+        finalize=True,
+        resizable=True,
+    )
 
     while True:
-            event, values = window.read()
-            if event in (sg.WIN_CLOSED, 'Exit'):
-                break
+        event, values = window.read()
+        if event in (sg.WIN_CLOSED, "Exit"):
+            break
 
     window.close()
