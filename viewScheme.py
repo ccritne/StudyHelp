@@ -3,15 +3,17 @@ from functions import existsFilename, convert_to_bytes, existsImg
 from setup import cursor
 from addScheme import updateScheme
 
-def viewScheme(flashcardID : int):
 
-    if flashcardID is not None:      
-        cursor.execute(f"SELECT filenameScheme FROM flashcards WHERE ID={flashcardID}")
-        
+def viewScheme(flashcardID: int):
+    if flashcardID is not None:
+        cursor.execute(
+            "SELECT filenameScheme FROM flashcards WHERE ID=?", (flashcardID,)
+        )
+
         filename = cursor.fetchone()[0]
-        
+
         img = None
-        
+
         condWindowVisible = True
 
         if existsFilename(filename):
@@ -26,30 +28,31 @@ def viewScheme(flashcardID : int):
 
             if existsFilename(filename):
                 img = convert_to_bytes(filename, (800, 500))
-        
+
         if condWindowVisible:
             layout = [
-                        [sg.Image(data=img, key="imgScheme", size=(800, 500))],
-                        [sg.HorizontalSeparator()],
-                        [sg.Button('Change scheme', key="changeScheme")]
-                    ]
-            
-            window = sg.Window("PopupScheme", layout=layout, finalize=True)
-        
+                [sg.Image(data=img, key="imgScheme", size=(800, 500))],
+                [sg.HorizontalSeparator()],
+                [sg.Button("Change scheme", key="changeScheme")],
+            ]
+
+            window = sg.Window(
+                "PopupScheme", layout=layout, keep_on_top=True, finalize=True
+            )
+
             while True:
                 event, values = window.read()
-                if event in (sg.WIN_CLOSED, 'Exit'):
+                if event in (sg.WIN_CLOSED, "Exit"):
                     break
-                
+
                 if event is not None:
                     if event == "changeScheme":
-                        
                         filename = updateScheme(flashcardID=flashcardID)
 
                         if existsFilename(filename):
                             img = convert_to_bytes(filename, (800, 500))
-                            window['imgScheme'].update(data=img)
+                            window["imgScheme"].update(data=img)
                         else:
-                            sg.popup_error('Path wrong!', keep_on_top=True, modal=True)
+                            sg.popup_error("Path wrong!", keep_on_top=True, modal=True)
 
             window.close()

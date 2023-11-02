@@ -1,93 +1,168 @@
 import PySimpleGUI as sg
 from functions import getSettingsValue, FromTo, getActualPage, getPreviousPage
-from setup import cursor, con
+from setup import cursor, con, WEEKDAYS
 from browseFlashcards import browseFlashcards
 from viewScheme import viewScheme
 from todayFlashcards import seeTodaySessions
 from toDoList import seeToDoList
 
-def makeMainWindow():
 
+def makeMainWindow():
     MenuLayout = [
-        [sg.Button('Deck & Flashcards', key="browseFlashcards", size=225)],
-        [sg.Button('Check deadlines', key="deadlines", size=225)],
-        [sg.Button('Today source session', key="todayStudySource", size=225)],
-        [sg.Button('To-Do List', key="todolist", size=225)],
-        [sg.Button('Settings', key="settings", size=225)],
+        [sg.Button("Deck & Flashcards", key="browseFlashcards", size=225)],
+        [sg.Button("Check deadlines", key="deadlines", size=225)],
+        [sg.Button("Today source session", key="todayStudySource", size=225)],
+        [sg.Button("To-Do List", key="todolist", size=225)],
+        [sg.Button("Settings", key="settings", size=225)],
     ]
 
     DeadlinesLayout = [
         [
             sg.Table(
-                    values=[], 
-                    headings=["ID","Source Name", "Deadline"],
-                    hide_vertical_scroll=True,
-                    justification="center",
-                    select_mode="none",
-                    key="deadlinesDeck"
+                values=[],
+                headings=["ID", "Source Name", "Deadline"],
+                hide_vertical_scroll=True,
+                justification="center",
+                select_mode="none",
+                key="deadlinesDeck",
             )
         ],
         [sg.HorizontalSeparator()],
-        [sg.Button('Menu', key="EVENT_MENU_Deadlines", size=225)]
+        [sg.Button("Menu", key="EVENT_MENU_Deadlines", size=225)],
     ]
-    
-    studyDays = getSettingsValue('studyDays')
+
+    studyDays = getSettingsValue("studyDays")
 
     SettingsLayout = [
-                [sg.Text('Max study hour', size=(20, 1)), sg.Input(default_text=getSettingsValue('maxStudyHour'), key='maxStudyHour', size=(5, 1))],
-                [sg.Text('Hour for Notification', size=(20, 1)), sg.Combo([x for x in range(8, 24)], key='defaultHourNotification', default_value=getSettingsValue('defaultHourNotification'), size=(3,1))],
-                [sg.Text('Max subjects for day', size=(20, 1)), sg.Combo([x for x in range(1, 4)], key='maxSubjectsDay', default_value=getSettingsValue('maxSubjectsDay'), size=(3,1))],
-                [sg.Text('Days ')],
-                [sg.Checkbox(text='Mon', size=(6, 1), key='monSettings', default=bool(int(studyDays[0]))), sg.Checkbox(text='Fri', size=(6, 1), key='friSettings', default=bool(int(studyDays[4])))],
-                [sg.Checkbox(text='Tue', size=(6, 1), key='tueSettings', default=bool(int(studyDays[1]))), sg.Checkbox(text='Sat', size=(6, 1), key='satSettings', default=bool(int(studyDays[5])))],
-                [sg.Checkbox(text='Wed', size=(6, 1), key='wedSettings', default=bool(int(studyDays[2]))), sg.Checkbox(text='Sun', size=(6, 1), key='sunSettings', default=bool(int(studyDays[6])))],
-                [sg.Checkbox(text='Thu', size=(6, 1), key='thuSettings', default=bool(int(studyDays[3])))],
-                [sg.HorizontalSeparator()],
-                [sg.Button('Menu', key="EVENT_MENU_Settings")]
+        [
+            sg.Text("Max study hour", size=(20, 1)),
+            sg.Input(
+                default_text=getSettingsValue("maxStudyHour"),
+                key="maxStudyHour",
+                size=(5, 1),
+            ),
+        ],
+        [
+            sg.Text("Hour for Notification", size=(20, 1)),
+            sg.Combo(
+                [x for x in range(8, 24)],
+                key="defaultHourNotification",
+                default_value=getSettingsValue("defaultHourNotification"),
+                size=(3, 1),
+            ),
+        ],
+        [
+            sg.Text("Max subjects for day", size=(20, 1)),
+            sg.Combo(
+                [x for x in range(1, 4)],
+                key="maxSubjectsDay",
+                default_value=getSettingsValue("maxSubjectsDay"),
+                size=(3, 1),
+            ),
+        ],
+        [sg.Text("Days ")],
+        [
+            sg.Checkbox(
+                text=WEEKDAYS[0],
+                size=(6, 1),
+                key="monSettings",
+                default=bool(int(studyDays[0])),
+            ),
+            sg.Checkbox(
+                text=WEEKDAYS[4],
+                size=(6, 1),
+                key="friSettings",
+                default=bool(int(studyDays[4])),
+            ),
+        ],
+        [
+            sg.Checkbox(
+                text=WEEKDAYS[1],
+                size=(6, 1),
+                key="tueSettings",
+                default=bool(int(studyDays[1])),
+            ),
+            sg.Checkbox(
+                text=WEEKDAYS[5],
+                size=(6, 1),
+                key="satSettings",
+                default=bool(int(studyDays[5])),
+            ),
+        ],
+        [
+            sg.Checkbox(
+                text=WEEKDAYS[2],
+                size=(6, 1),
+                key="wedSettings",
+                default=bool(int(studyDays[2])),
+            ),
+            sg.Checkbox(
+                text=WEEKDAYS[6],
+                size=(6, 1),
+                key="sunSettings",
+                default=bool(int(studyDays[6])),
+            ),
+        ],
+        [
+            sg.Checkbox(
+                text=WEEKDAYS[3],
+                size=(6, 1),
+                key="thuSettings",
+                default=bool(int(studyDays[3])),
+            )
+        ],
+        [sg.HorizontalSeparator()],
+        [sg.Button("Menu", key="EVENT_MENU_Settings")],
     ]
 
-    menuBar = [
-        ['File', 'Exit'],
-        ['Help', 'About']
-    ]
+    menuBar = [["File", "Exit"], ["Help", "About"]]
 
     layout = [
-                [sg.Menu(menuBar)],
-                [
-                    sg.Column(MenuLayout, visible=True, key='Menu', justification="center", vertical_alignment="center"), 
-                    sg.Column(DeadlinesLayout, visible=False, key="Deadlines", justification="center"), 
-                    sg.Column(SettingsLayout, visible=False, key="Settings", justification="center"),
-                ]
-            ]
-    
-    window =  sg.Window(title="StudyHelp", layout=layout, size=(300, 400), finalize=True)
-    
+        [sg.Menu(menuBar)],
+        [
+            sg.Column(
+                MenuLayout,
+                visible=True,
+                key="Menu",
+                justification="center",
+                vertical_alignment="center",
+            ),
+            sg.Column(
+                DeadlinesLayout, visible=False, key="Deadlines", justification="center"
+            ),
+            sg.Column(
+                SettingsLayout, visible=False, key="Settings", justification="center"
+            ),
+        ],
+    ]
 
+    window = sg.Window(title="StudyHelp", layout=layout, size=(300, 400), finalize=True)
 
     while True:
         event, values = window.read()
-        if event in (sg.WIN_CLOSED, 'Exit'):
+        if event in (sg.WIN_CLOSED, "Exit"):
             break
-        
+
         if event is not None:
             ### START BINDING MENULAYOUT EVENTS
             if event == "flashcards":
-                FromTo('Menu', 'Flashcards', window)
-    
+                FromTo("Menu", "Flashcards", window)
+
             if event == "deadlines":
-                sources = cursor.execute('SELECT ID, name, deadline FROM sources').fetchall()
-                window['deadlinesDeck'].update(values=sources)
-                FromTo('Menu', 'Deadlines', window)
+                sources = cursor.execute(
+                    "SELECT ID, name, deadline FROM sources"
+                ).fetchall()
+                window["deadlinesDeck"].update(values=sources)
+                FromTo("Menu", "Deadlines", window)
 
             if event == "settings":
-                FromTo('Menu', 'Settings', window)
-            
+                FromTo("Menu", "Settings", window)
+
             if event == "todolist":
                 seeToDoList()
-            
+
             if event == "todayStudySource":
                 seeTodaySessions()
-
 
             ### END BINDING MENULAYOUT EVENTS
 
@@ -95,7 +170,7 @@ def makeMainWindow():
 
             if "EVENT_BACK" in event:
                 FromTo(getActualPage(), getPreviousPage(), window)
-            
+
             ###
 
             ### EVENTS FOR BROWSING FLASHCARDS AND DECKS
@@ -105,36 +180,42 @@ def makeMainWindow():
 
             ###
 
-            
             ### MENU BUTTONS EVENT
 
             if "EVENT_MENU" in event:
-
                 if "Settings" in event:
-                    maxStudyHour = int(values['maxStudyHour'])
-                    defaultHourNotification = int(values['defaultHourNotification'])
-                    maxSubjectsDay = int(values['maxSubjectsDay'])
+                    maxStudyHour = int(values["maxStudyHour"])
+                    defaultHourNotification = int(values["defaultHourNotification"])
+                    maxSubjectsDay = int(values["maxSubjectsDay"])
 
-                    studyDays = "".join([str(int(window['monSettings'].get())),
-                                        str(int(window['tueSettings'].get())),
-                                        str(int(window['wedSettings'].get())),
-                                        str(int(window['thuSettings'].get())),
-                                        str(int(window['friSettings'].get())),
-                                        str(int(window['satSettings'].get())),
-                                        str(int(window['sunSettings'].get()))])
-                    
-                    query = '''UPDATE settings SET  maxStudyHour= ? , 
+                    studyDays = "".join(
+                        [
+                            str(int(window["monSettings"].get())),
+                            str(int(window["tueSettings"].get())),
+                            str(int(window["wedSettings"].get())),
+                            str(int(window["thuSettings"].get())),
+                            str(int(window["friSettings"].get())),
+                            str(int(window["satSettings"].get())),
+                            str(int(window["sunSettings"].get())),
+                        ]
+                    )
+
+                    query = """UPDATE settings SET  maxStudyHour= ? , 
                                                     defaultHourNotification = ?, 
                                                     studyDays = ?,
-                                                    maxSubjectsDay = ?'''
+                                                    maxSubjectsDay = ?"""
 
-                    parameters = (maxStudyHour, defaultHourNotification, studyDays, maxSubjectsDay) 
+                    parameters = (
+                        maxStudyHour,
+                        defaultHourNotification,
+                        studyDays,
+                        maxSubjectsDay,
+                    )
 
                     cursor.execute(query, parameters)
                     con.commit()
-                
-                
-                FromTo(getActualPage(), 'Menu', window)
+
+                FromTo(getActualPage(), "Menu", window)
             ###
-   
+
     window.close()
