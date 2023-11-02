@@ -1,6 +1,5 @@
 import sqlite3
 from setup import *
-from tkinter import *
 import PySimpleGUI as sg
 from datetime import datetime, timedelta, time
 import copy
@@ -482,6 +481,8 @@ def add_latex_to_input_field(window):
         key = "back"
 
     if key is not None:
+        from tkinter import INSERT
+
         widget = window[key].Widget
         cursor_position = widget.index(INSERT)
         widget.insert(cursor_position, "[latex][/latex]")
@@ -490,19 +491,12 @@ def add_latex_to_input_field(window):
         )  # I move the cursor between the tag to write the text that will be displayed formatted
 
 
-def save_scheme(flashcardid, filename):
-    exitMessage = "EXIT_SUCCESS"
-    if exists_filename(filename):
-        cursor.execute(
-            "UPDATE flashcards SET filename_scheme=? WHERE id=?",
-            (filename, flashcardid),
-        )
-        con.commit()
-    else:
-        sg.popup_error("Path Wrong", keep_on_top=True, modal=True)
-        exitMessage = "PATH_WRONG"
-
-    return exitMessage
+def save_scheme(flashcard_id, filename):
+    cursor.execute(
+        "UPDATE flashcards SET filename_scheme=? WHERE id=?",
+        (filename, flashcard_id),
+    )
+    con.commit()
 
 
 def creation_db():

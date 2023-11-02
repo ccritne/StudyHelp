@@ -1,5 +1,29 @@
-from functions import *
-from add_scheme import update_scheme
+import tkinter as tk
+from PIL import ImageTk, Image
+from tkinter.filedialog import askopenfilename
+
+from functions import exists_filename, save_scheme
+from setup import cursor
+
+
+def set_image_label(label: tk.Label, filename: str):
+    label.update_idletasks()
+    img = Image.open(filename)
+    resized_img = img.resize((label.winfo_width(), label.winfo_height()))
+    scheme_image = ImageTk.PhotoImage(resized_img)
+    label.configure(image=scheme_image)
+    label.image_ref = scheme_image
+
+
+def ask_filename() -> str:
+    filename = askopenfilename(title="Scheme path")
+    return filename
+
+
+def save_new_scheme(label: tk.Label, flashcard_id: int):
+    filename = ask_filename()
+    set_image_label(label, filename)
+    save_scheme(filename=filename, flashcard_id=flashcard_id)
 
 
 def view_scheme(flashcard_id: int):
@@ -8,53 +32,27 @@ def view_scheme(flashcard_id: int):
             "SELECT filename_scheme FROM flashcards WHERE id=?", (flashcard_id,)
         )
 
-        filename = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        filename = result[0]
 
-        img = None
+        root = tk.Tk()
+        root.title("Scheme")
+        root.geometry("800x550")
 
-        cond_window_visible = True
+        image_label = tk.Label(root, width=800, height=500)
+        image_label.pack()
 
-        if exists_filename(filename):
-            img = convert_to_bytes(filename, (800, 500))
+        if not exists_filename(filename):
+            filename = ask_filename()
 
-        while not exists_img(img):
-            filename, result = update_scheme(flashcard_id=flashcard_id)
+        set_image_label(image_label, filename)
 
-            if result == "EXIT_WINDOW":
-                cond_window_visible = False
-                break
+        tk.Button(
+            root,
+            text="Change scheme",
+            command=lambda: save_new_scheme(
+                label=image_label, flashcard_id=flashcard_id
+            ),
+        ).pack()
 
-            if exists_filename(filename):
-                img = convert_to_bytes(filename, (800, 500))
-
-        if cond_window_visible:
-            layout = [
-                [sg.Image(data=img, key="img_scheme", size=(800, 500))],
-                [sg.HorizontalSeparator()],
-                [sg.Button("Change scheme", key="change_scheme")],
-            ]
-
-            window = sg.Window(
-                "Popup Scheme",
-                layout=layout,
-                keep_on_top=True,
-                finalize=True,
-                modal=True,
-            )
-
-            while True:
-                event, values = window.read()
-                if event in (sg.WIN_CLOSED, "Exit"):
-                    break
-
-                if event is not None:
-                    if event == "change_scheme":
-                        filename = update_scheme(flashcard_id=flashcard_id)
-
-                        if exists_filename(filename):
-                            img = convert_to_bytes(filename, (800, 500))
-                            window["img_scheme"].update(data=img)
-                        else:
-                            sg.popup_error("Path wrong!", keep_on_top=True, modal=True)
-
-            window.close()
+        root.mainloop()
