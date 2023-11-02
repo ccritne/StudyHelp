@@ -5,7 +5,7 @@ from add_scheme import update_scheme
 def view_scheme(flashcard_id: int):
     if flashcard_id is not None:
         cursor.execute(
-            "SELECT filenameScheme FROM flashcards WHERE id=?", (flashcard_id,)
+            "SELECT filename_scheme FROM flashcards WHERE id=?", (flashcard_id,)
         )
 
         filename = cursor.fetchone()[0]
@@ -34,7 +34,13 @@ def view_scheme(flashcard_id: int):
                 [sg.Button("Change scheme", key="change_scheme")],
             ]
 
-            window = sg.Window("PopupScheme", layout=layout, finalize=True)
+            window = sg.Window(
+                "Popup Scheme",
+                layout=layout,
+                keep_on_top=True,
+                finalize=True,
+                modal=True,
+            )
 
             while True:
                 event, values = window.read()

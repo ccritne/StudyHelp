@@ -207,9 +207,9 @@ def see_to_do_list():
                             calendar.end_session
                     FROM calendar 
                     LEFT JOIN 
-                    sources ON sourceid = sources.id 
+                    sources ON source_id = sources.id 
                     WHERE date = ? 
-                    ORDER BY insertedDay
+                    ORDER BY inserted_day
                 """
         parameters = (date_str,)
 

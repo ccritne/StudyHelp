@@ -6,7 +6,7 @@ def save_scheme(flashcard_id: int, filename: str):
 
     if exists_filename(filename):
         cursor.execute(
-            "UPDATE flashcards SET filenameScheme=? WHERE id=?",
+            "UPDATE flashcards SET filename_scheme=? WHERE id=?",
             (filename, flashcard_id),
         )
         con.commit()
@@ -32,6 +32,7 @@ def update_scheme(flashcard_id: int) -> (str, str):
     )
 
     filename: str = ""
+    exit_message = "EXIT_SUCCESS"
 
     while True:
         event, values = window.read()

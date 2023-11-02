@@ -22,7 +22,7 @@ def make_main_window():
                 hide_vertical_scroll=True,
                 justification="center",
                 select_mode="none",
-                key="deadlinesDeck",
+                key="deadlines_deck",
             )
         ],
         [sg.HorizontalSeparator()],

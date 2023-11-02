@@ -437,7 +437,7 @@ def exists_filename(filename):
     if filename in [None, "", "EXIT_WINDOW", "FILE_NOT_FOUND"]:
         return False
 
-    is_file = os.path.is_file(filename)
+    is_file = os.path.isfile(filename)
 
     return is_file
 
@@ -450,11 +450,11 @@ def exists_img(img):
 
 
 def check_input_click(event):
-    if event == "front_input_LClick":
+    if event == "front_LClick":
         set_back_input_selected(False)
         set_front_input_selected(True)
 
-    if event == "back_input_LClick" or event == "front_input_Tab":
+    if event == "back_LClick" or event == "front_Tab":
         set_front_input_selected(False)
         set_back_input_selected(True)
 
@@ -566,17 +566,17 @@ def update_all_deadlines():
     cursor.execute("SELECT id, number_pages, studied_pages, arr_sessions FROM sources;")
     sources = cursor.fetchall()
     for x in sources:
-        arrSessionWeek = ast.literal_eval(x[3])
-        upDeadline = get_string_date(
+        arr_session_week = ast.literal_eval(x[3])
+        up_deadline = get_string_date(
             calculate_deadline(
-                totalPages=x[1],
-                studiedPages=x[2],
-                arrSessionWeek=arrSessionWeek,
-                isBook=True,
+                total_pages=x[1],
+                studied_pages=x[2],
+                arr_session_week=arr_session_week,
+                is_book=True,
             )
         )
         cursor.execute(
-            "UPDATE sources SET deadline = ? WHERE id = ?;", (upDeadline, x[0])
+            "UPDATE sources SET deadline = ? WHERE id = ?;", (up_deadline, x[0])
         )
         con.commit()
 
