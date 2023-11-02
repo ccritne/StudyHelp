@@ -1,16 +1,16 @@
 import PySimpleGUI as sg
-from functions import fromTextToElements
+from functions import from_text_to_elements
 
 
-def previewCard(textFront: str, textBack: str):
-    elementsFront = fromTextToElements(textFront)
-    elementsBack = fromTextToElements(textBack)
+def preview_card(text_front: str, text_back: str):
+    elements_front = from_text_to_elements(text_front)
+    elements_back = from_text_to_elements(text_back)
 
     layout = [
         [sg.Text(text="Front: ")],
         [
             sg.Column(
-                elementsFront,
+                elements_front,
                 scrollable=True,
                 vertical_scroll_only=True,
                 expand_x=True,
@@ -22,7 +22,7 @@ def previewCard(textFront: str, textBack: str):
         [sg.Text(text="Back: ")],
         [
             sg.Column(
-                elementsBack,
+                elements_back,
                 scrollable=True,
                 vertical_scroll_only=True,
                 expand_x=True,
