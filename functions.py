@@ -289,7 +289,7 @@ def get_table_deck() -> list:
 
 
 def get_total_minutes(index_day, except_id=None):
-    query = "SELECT arrSessions FROM sources "
+    query = "SELECT arr_sessions FROM sources "
 
     if except_id is not None:
         query = query + " WHERE id <> " + str(except_id)
@@ -303,10 +303,10 @@ def get_total_minutes(index_day, except_id=None):
             json[WEEKDAYS[index_day]]["is_study_day"]
             and json[WEEKDAYS[index_day]]["are_there_sessions"]
         ):
-            total_minutes += json[WEEKDAYS[index_day]]["totalDuration"]
-        if json["withLectures"] and json[WEEKDAYS[index_day]]["areThereLectures"]:
-            total_minutes += json[WEEKDAYS[index_day]]["timeLectures"][
-                "durationLecture"
+            total_minutes += json[WEEKDAYS[index_day]]["total_duration"]
+        if json["with_lectures"] and json[WEEKDAYS[index_day]]["are_there_lectures"]:
+            total_minutes += json[WEEKDAYS[index_day]]["time_lectures"][
+                "duration_lecture"
             ]
 
     return total_minutes
@@ -450,11 +450,11 @@ def exists_img(img):
 
 
 def check_input_click(event):
-    if event == "frontInput_LClick":
+    if event == "front_input_LClick":
         set_back_input_selected(False)
         set_front_input_selected(True)
 
-    if event == "backInput_LClick" or event == "frontInput_Tab":
+    if event == "back_input_LClick" or event == "front_input_Tab":
         set_front_input_selected(False)
         set_back_input_selected(True)
 
@@ -478,7 +478,8 @@ def save_scheme(flashcardid, filename):
     exitMessage = "EXIT_SUCCESS"
     if exists_filename(filename):
         cursor.execute(
-            "UPDATE flashcards SET filenameScheme=? WHERE id=?", (filename, flashcardid)
+            "UPDATE flashcards SET filename_scheme=? WHERE id=?",
+            (filename, flashcardid),
         )
         con.commit()
     else:
@@ -562,7 +563,7 @@ def creation_db():
 
 
 def update_all_deadlines():
-    cursor.execute("SELECT id, numberPages, studiedPages, arrSessions FROM sources;")
+    cursor.execute("SELECT id, number_pages, studied_pages, arr_sessions FROM sources;")
     sources = cursor.fetchall()
     for x in sources:
         arrSessionWeek = ast.literal_eval(x[3])
