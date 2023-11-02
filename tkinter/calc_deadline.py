@@ -125,7 +125,7 @@ def calculate_deadline(
     # Adding the calculated days to the deadline:
     deadline += td(days=days_to_add)
 
-    # ?[Closed][@marco-secci][saw] QUESTION:
+    # ?[Closed][@marco-secci][seen] QUESTION:
     # Idk what this does, still have to understand what exactly will be list_session_week
     #
     # ! ANSWER (@ccritne):

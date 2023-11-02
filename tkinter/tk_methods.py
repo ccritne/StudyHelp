@@ -12,6 +12,7 @@ import textwrap
 import base64
 import os
 from termcolor import colored
+from calc_deadline import calculate_deadline
 
 # Global variables:
 from tk_setup import *
@@ -140,17 +141,15 @@ def update_all_deadlines():
     sources = cursor.fetchall()
     for x in sources:
         arr_session_week = ast.literal_eval(x[3])  # Converts string to json
-        up_deadline = get_string_date(
-            calculate_deadline(
-                total_pages=x[1],
-                studied_pages=x[2],
-                arr_session_week=arr_session_week,
-                #
-                #  The next line is useless but in the future will be necessary to determine
-                #  the type of the source (book, video or audio)
-                #
-                is_book=True,
-            )
+        up_deadline = calculate_deadline(
+            total_pages=x[1],
+            studied_pages=x[2],
+            arr_session_week=arr_session_week,
+            #
+            #  The next line is useless but in the future will be necessary to determine
+            #  the type of the source (book, video or audio)
+            #
+            is_book=True,
         )
 
         cursor.execute(
