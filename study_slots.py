@@ -369,7 +369,7 @@ def get_study_slots(
 
                     if (
                         "are_there_sessions" in defaults[WEEKDAYS[x]]
-                        and defaults[WEEKDAYS[x]]["are_there_Sessions"]
+                        and defaults[WEEKDAYS[x]]["are_there_sessions"]
                         and j < defaults[WEEKDAYS[x]]["amount"]
                     ):
                         default_type = defaults[WEEKDAYS[x]]["types"][j]
@@ -490,7 +490,7 @@ def get_study_slots(
 
                             if is_book:
                                 infos[WEEKDAYS[x]]["pages"] = []
-                                infos[WEEKDAYS[x]]["totalPages"] = 0
+                                infos[WEEKDAYS[x]]["total_pages"] = 0
 
                             infos[WEEKDAYS[x]]["total_duration"] = 0
                             for j in range(arr_amount[x]):

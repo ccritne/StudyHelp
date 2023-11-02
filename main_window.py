@@ -130,6 +130,7 @@ def make_main_window():
     # PySimpleGUI doesn't allow to add dynamically layout or elements so I have to
     # hide the previous layout and show the next layout to simulate the
     # effect
+
     layout = [
         [sg.Menu(menu_bar)],
         [

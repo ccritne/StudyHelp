@@ -2,6 +2,15 @@ from functions import *
 
 
 def save_scheme(flashcard_id: int, filename: str):
+    """
+    ## `save_scheme` method
+
+    ===============================================
+
+    #### Description
+
+    It saves the scheme.
+    """
     exit_message = "EXIT_SUCCESS"
 
     if exists_filename(filename):

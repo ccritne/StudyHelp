@@ -61,7 +61,6 @@ def calculate_deadline(
         index_str = "total_pages"
 
     days_to_add = 0
-
     while today_index < 7:
         if (
             arr_session_week[WEEKDAYS[today_index]]["is_study_day"]
@@ -188,8 +187,8 @@ def render_latex(
     formula: str, fontsize: int = 12, dpi: int = 300, format_: str = "png"
 ) -> bytes:
     # Create a figure with the specified size and add the LaTeX formula
-    fig, ax = plt.subplots(figsize=(0.01, 0.01))
-    ax.text(0, 0, "${}$".format(formula), fontsize=fontsize)
+    fig = plt.figure(figsize=(0.01, 0.01))
+    fig.text(0, 0, "${}$".format(formula), fontsize=fontsize)
 
     # Save the figure to a BytesIO buffer
     buffer = BytesIO()
@@ -241,7 +240,10 @@ def convert_to_bytes(filename: str, resize: dict | None = None) -> bytes:
 
 
 def get_source_values(source_id: int) -> tuple:
-    cursor.execute("SELECT * FROM sources WHERE id=?", (source_id))
+    """
+    It gets all values of a specific source.
+    """
+    cursor.execute("SELECT * FROM sources WHERE id=?", (source_id,))
 
     return cursor.fetchone()
 
@@ -411,12 +413,8 @@ def from_text_to_elements(text: str):
             x += 7
 
         elif text[x : x + 8] == "[/latex]":
-            if normal_string:
-                elements.append(
-                    [sg.Text(text=textwrap.fill(normal_string), expand_x=True)]
-                )
+            latex_content = normal_string
             normal_string = ""
-            latex_content = text[x - 7 : x]
             image_bytes = render_latex(latex_content)
             image_base64 = base64.b64encode(image_bytes)
             elements.append([sg.Column([[sg.Image(data=image_base64)]])])

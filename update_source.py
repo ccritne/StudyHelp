@@ -1,26 +1,33 @@
 from functions import *
 from study_slots import *
 from setup import WEEKDAYS
+import logging
+
+# Create log for this script:
+logging.basicConfig(
+    filename="update_source.log",
+    filemode="w",
+    format="%(name)s - %(levelname)s - %(message)s",
+)
 
 
 def update_deadline(
     window: sg.Window,
-    values: dict,
+    number_pages_str: str,
+    studied_pages_str: str,
     study_slots_info: dict,
     is_book: bool = True,
 ):
-    if is_book:
-        number_pages_str = values["number_pages"]
-        studied_pages_str = values["entry_studied_pages"]
-        if check_str_int_input(number_pages_str) and check_str_int_input(
-            studied_pages_str
-        ):
-            number_pages = int(number_pages_str)
-            studied_pages = int(studied_pages_str)
-            if number_pages > 0 and studied_pages >= 0:
-                if study_slots_info is not None:
-                    window["preview_deadline"].update(
-                        value=get_string_date(
+    try:
+        if is_book:
+            if check_str_int_input(number_pages_str) and check_str_int_input(
+                studied_pages_str
+            ):
+                number_pages = int(number_pages_str)
+                studied_pages = int(studied_pages_str)
+                if number_pages > 0 and studied_pages >= 0:
+                    if study_slots_info is not None:
+                        up_deadline = get_string_date(
                             calculate_deadline(
                                 is_book=is_book,
                                 arr_session_week=study_slots_info,
@@ -28,9 +35,16 @@ def update_deadline(
                                 studied_pages=studied_pages,
                             )
                         )
-                    )
+                        window["preview_deadline"].update(value=up_deadline)
+
+                        # Update log:
+                        logging.info(f"The deadline for this book is {up_deadline}. ")
             else:
                 window["preview_deadline"].update(value="Check values!")
+
+    # Register error(s):
+    except Exception as e:
+        logging.info(f"An error occurred. {e}")
 
 
 def creation_events(
@@ -162,6 +176,12 @@ def creation_events(
 
 
 def update_source(command: str = "NEW"):
+    """
+    It creates or changes the source.
+    """
+
+    # Value of array at index i corresponds to decision of the WEEKDAY[i]
+    # to study or rest (0=Rest, 1=Study)
     study_days = [bool(int(x)) for x in get_settings_value("study_days")]
 
     study_slots_info = {}
@@ -179,7 +199,6 @@ def update_source(command: str = "NEW"):
     default_name_course = ""
 
     is_book = True
-    is_video = False
 
     default_total_pages = 100
     default_studied_pages = 0
@@ -189,11 +208,16 @@ def update_source(command: str = "NEW"):
     default_deadline = "Insert sessions!"
 
     if command == "MODIFY":
-        source_values = get_source_values(get_selected_source_id())
+        source_values = get_source_values(
+            get_selected_source_id()
+        )  # Get data of selected source
 
-        study_slots_info = ast.literal_eval(source_values[7])
+        study_slots_info = ast.literal_eval(source_values[7])  # Converts string to json
 
         def update_default_value(old_value, source_values, index):
+            """
+            It updates the value of a variable with the source_values (if it is not None).
+            """
             if source_values[index] is not None:
                 return source_values[index]
 
@@ -212,6 +236,7 @@ def update_source(command: str = "NEW"):
         default_deadline = update_default_value(default_deadline, source_values, 6)
 
         for x in range(7):
+            # For every day I check if it is a study day and if the user has inserted sessions
             if (
                 study_slots_info[WEEKDAYS[x]]["is_study_day"]
                 and study_slots_info[WEEKDAYS[x]]["are_there_sessions"]
@@ -349,7 +374,8 @@ def update_source(command: str = "NEW"):
                 update_deadline(
                     is_book=is_book,
                     window=window,
-                    values=values,
+                    number_pages_str=values["number_pages"],
+                    studied_pages_str=values["entry_studied_pages"],
                     study_slots_info=study_slots_info,
                 )
 
@@ -373,7 +399,7 @@ def update_source(command: str = "NEW"):
                     if command == "NEW":
                         study_slots_info = get_study_slots(
                             is_book=is_book,
-                            is_video=is_video,
+                            # is_video=is_video,
                             study_days=book_study_days,
                             arr_amount=arr_amounts,
                             defaults=study_slots_info,
@@ -381,7 +407,7 @@ def update_source(command: str = "NEW"):
                     if command == "MODIFY":
                         study_slots_info = get_study_slots(
                             is_book=is_book,
-                            is_video=is_video,
+                            # is_video=is_video,
                             study_days=book_study_days,
                             arr_amount=arr_amounts,
                             defaults=study_slots_info,
@@ -391,7 +417,8 @@ def update_source(command: str = "NEW"):
                     update_deadline(
                         is_book=is_book,
                         window=window,
-                        values=values,
+                        number_pages_str=values["number_pages"],
+                        studied_pages_str=values["entry_studied_pages"],
                         study_slots_info=study_slots_info,
                     )
 
@@ -402,7 +429,7 @@ def update_source(command: str = "NEW"):
                         ):
                             max_study_hour = get_settings_value("max_study_hour")
                             total_minutes = (
-                                get_total_minutes(x, exceptid=get_selected_source_id())
+                                get_total_minutes(x, except_id=get_selected_source_id())
                                 + study_slots_info[WEEKDAYS[x]]["total_duration"]
                             )
                             remaining_minutes = max_study_hour * 60 - total_minutes
@@ -520,7 +547,7 @@ def update_source(command: str = "NEW"):
                         "start_date_lectures"
                     ]
                     study_slots_info["end_date_lectures"] = source_slots_info[
-                        "end_date_Lectures"
+                        "end_date_lectures"
                     ]
                     for x in range(7):
                         if WEEKDAYS[x] not in study_slots_info:

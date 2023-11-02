@@ -25,12 +25,12 @@ def see_today_sessions():
     while True:
         event, values = window.read()
 
-        ### START BINDING DECKSLAYOUT EVENTS
+        # START BINDING DECKSLAYOUT EVENTS
         if event in (sg.WIN_CLOSED, "Exit"):
             break
 
         if event is not None:
-            if event == "start_deck":
+            if event == "start_deck" and values["info_decks"] != []:
                 played_source_id = get_table_deck()[values["info_decks"][0]][0]
 
                 today_flashcards_of_source = get_today_flashcards_source(
@@ -46,6 +46,6 @@ def see_today_sessions():
                     if state == "EXIT":
                         break
 
-        ### END BINDING DECKSLAYOUT EVENTS
+        # END BINDING DECKSLAYOUT EVENTS
 
     window.close()
