@@ -5,7 +5,7 @@ import logging
 
 # Create log for this script:
 logging.basicConfig(
-    filename="update_source.log",
+    filename="logs/update_source.log",
     filemode="w",
     format="%(name)s - %(levelname)s - %(message)s",
 )
@@ -54,7 +54,7 @@ def creation_events(
     with_lectures: bool,
     deadline: datetime,
 ):
-    ### Creation of events
+    # Creation of events
     last_id = None
 
     if command == "NEW":

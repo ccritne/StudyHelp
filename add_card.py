@@ -1,8 +1,19 @@
 from functions import *
 from preview import preview_card
+from datetime import datetime as dt
+import logging
+
+# Create log for this script:
+logging.basicConfig(
+    filename="logs/add_card.log",
+    filemode="w",
+    format="%(name)s - %(levelname)s - %(message)s",
+)
 
 
 def add_card():
+    # Logging:
+    logging.info(f"{dt.now}: Card added.")
     layout = [
         [
             [sg.Column([[sg.Button("Latex", key="addLatex")]], justification="right")],

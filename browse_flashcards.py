@@ -7,14 +7,14 @@ from add_card import add_card
 
 def update_flashcards_inputs(window: sg.Window, front: str, back: str):
     """
-    It updates the text of the flashcards inner the InputText.
+    It updates the text of the flashcards inside the InputText.
     """
 
-    visible_flashcars_inputs = False
+    visible_flashcards_inputs = False
     if len(get_flashcards_array()) > 0:
-        visible_flashcars_inputs = True
+        visible_flashcards_inputs = True
 
-    window["flashcard_inputs"].update(visible=visible_flashcars_inputs)
+    window["flashcard_inputs"].update(visible=visible_flashcards_inputs)
     window["front"].update(value=front)
     window["back"].update(value=back)
 
