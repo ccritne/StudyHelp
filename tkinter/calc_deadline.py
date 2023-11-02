@@ -136,7 +136,7 @@ def calculate_deadline(
     week_do = list_session_week[index_str]
 
     try:
-        # ?[Closed][@marco-secci][to-seen] QUESTION:
+        # ?[Closed][@marco-secci][to-see] QUESTION:
         # same as above
         #
         # ! ANSWER (@ccritne):
