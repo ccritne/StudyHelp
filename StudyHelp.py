@@ -1,7 +1,7 @@
 from main_window import make_main_window
-from functions import creationDB, updateAllDeadlines
+from functions import creation_db, update_all_deadlines
 
 if __name__ == "__main__":
-    creationDB()
-    updateAllDeadlines()
+    creation_db()
+    update_all_deadlines()
     make_main_window()

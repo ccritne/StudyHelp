@@ -2,7 +2,7 @@ from functions import *
 
 
 def preview_event(information: list):
-    ID = information[0]
+    id = information[0]
     title = information[10]
     type = information[1]
     start_time = information[5]
@@ -196,18 +196,18 @@ def see_to_do_list():
 
     def get_to_do_data_of(date: datetime):
         date_str = get_string_date(date)
-        query = f"""SELECT calendar.ID, 
-                            sources.courseName,
+        query = f"""SELECT calendar.id, 
+                            sources.course_name,
                             sources.name, 
                             calendar.type,
                             calendar.description,
-                            calendar.timeStartDate,
-                            calendar.timeEndDate,
+                            calendar.time_start_date,
+                            calendar.time_end_date,
                             calendar.start_session,
                             calendar.end_session
                     FROM calendar 
                     LEFT JOIN 
-                    sources ON sourceID = sources.ID 
+                    sources ON sourceid = sources.id 
                     WHERE date = ? 
                     ORDER BY insertedDay
                 """
@@ -231,11 +231,11 @@ def see_to_do_list():
     layout = [
         [
             sg.InputText(
-                key="selectedDate",
+                key="selected_date",
                 default_text=get_string_date(get_selected_date()),
                 size=(10, 1),
             ),
-            sg.Button("Select day", key="selectToDoDate"),
+            sg.Button("Select day", key="select_to_do_date"),
         ],
         [
             sg.Table(
@@ -251,7 +251,7 @@ def see_to_do_list():
                     "Start session",
                     "End session",
                 ],
-                key="To-Do-List",
+                key="to_do_list",
                 auto_size_columns=False,
                 expand_y=True,
                 expand_x=True,
@@ -266,7 +266,7 @@ def see_to_do_list():
         title="TODO List", layout=layout, finalize=True, modal=True, keep_on_top=True
     )
 
-    window["selectedDate"].bind("<Return>", "_Enter")
+    window["selected_date"].bind("<Return>", "_Enter")
 
     while True:
         event, values = window.read()
@@ -281,10 +281,10 @@ def see_to_do_list():
                 information = todo_list[event[2][0]]
                 preview_event(information)
 
-            if event in ["selectToDoDate", "selected_date_Enter"]:
-                sDate = values["selectedDate"]
+            if event in ["select_to_do_date", "selected_date_Enter"]:
+                sDate = values["selected_date"]
 
-                if event == "selectToDoDate":
+                if event == "select_to_do_date":
                     dtMon = datetime.now().month
                     selected_date = sg.popup_get_date(
                         close_when_chosen=True,
@@ -303,10 +303,10 @@ def see_to_do_list():
 
                 set_selected_date(datetime.strptime(sDate, "%Y-%m-%d"))
 
-                window["selectedDate"].update(
+                window["selected_date"].update(
                     value=get_string_date(get_selected_date())
                 )
                 todo_list = get_to_do_data_of(get_selected_date())
-                window["To-Do-List"].update(values=todo_list)
+                window["to_do_list"].update(values=todo_list)
 
     window.close()

@@ -2,9 +2,11 @@ from functions import *
 from add_scheme import update_scheme
 
 
-def view_scheme(flashcard_ID: int):
-    if flashcard_ID is not None:
-        cursor.execute(f"SELECT filenameScheme FROM flashcards WHERE ID={flashcard_ID}")
+def view_scheme(flashcard_id: int):
+    if flashcard_id is not None:
+        cursor.execute(
+            "SELECT filenameScheme FROM flashcards WHERE id=?", (flashcard_id,)
+        )
 
         filename = cursor.fetchone()[0]
 
@@ -16,7 +18,7 @@ def view_scheme(flashcard_ID: int):
             img = convert_to_bytes(filename, (800, 500))
 
         while not exists_img(img):
-            filename, result = update_scheme(flashcard_ID=flashcard_ID)
+            filename, result = update_scheme(flashcard_id=flashcard_id)
 
             if result == "EXIT_WINDOW":
                 cond_window_visible = False
@@ -27,9 +29,9 @@ def view_scheme(flashcard_ID: int):
 
         if cond_window_visible:
             layout = [
-                [sg.Image(data=img, key="imgScheme", size=(800, 500))],
+                [sg.Image(data=img, key="img_scheme", size=(800, 500))],
                 [sg.HorizontalSeparator()],
-                [sg.Button("Change scheme", key="changeScheme")],
+                [sg.Button("Change scheme", key="change_scheme")],
             ]
 
             window = sg.Window("PopupScheme", layout=layout, finalize=True)
@@ -40,12 +42,12 @@ def view_scheme(flashcard_ID: int):
                     break
 
                 if event is not None:
-                    if event == "changeScheme":
-                        filename = update_scheme(flashcard_ID=flashcard_ID)
+                    if event == "change_scheme":
+                        filename = update_scheme(flashcard_id=flashcard_id)
 
                         if exists_filename(filename):
                             img = convert_to_bytes(filename, (800, 500))
-                            window["imgScheme"].update(data=img)
+                            window["img_scheme"].update(data=img)
                         else:
                             sg.popup_error("Path wrong!", keep_on_top=True, modal=True)
 

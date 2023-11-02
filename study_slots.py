@@ -2,11 +2,11 @@ from functions import *
 
 
 def check_add_lecture_slot(
-    index_day: int, hour: int, minute: int, duration_minutes: int, except_ID: int = None
+    index_day: int, hour: int, minute: int, duration_minutes: int, except_id: int = None
 ):
-    query = "SELECT arrSessions FROM sources "
-    if except_ID is not None:
-        query += "WHERE ID <> " + str(except_ID)
+    query = "SELECT arr_sessions FROM sources "
+    if except_id is not None:
+        query += "WHERE id <> " + str(except_id)
 
     cursor.execute(query)
     result = cursor.fetchall()
@@ -15,10 +15,10 @@ def check_add_lecture_slot(
         json = ast.literal_eval(x)
         if json[WEEKDAYS[index_day]]["areThereLectures"]:
             arr_start_time = json[WEEKDAYS[index_day]]["timeLectures"][
-                "timeStartDateLecture"
+                "time_start_date_lecture"
             ].split(":")
             arr_end_time = json[WEEKDAYS[index_day]]["timeLectures"][
-                "timeEndDateLecture"
+                "time_end_date_lecture"
             ].split(":")
             minute_start = int(arr_start_time[0]) * 60 + int(arr_start_time[1])
             minute_end = int(arr_end_time[0]) * 60 + int(arr_end_time[1])
@@ -37,9 +37,9 @@ def get_source_slots(defaults: dict = None):
 
     if defaults != {} and defaults is not None:
         infos = copy.copy(defaults)
-        if "startDateLectures" in defaults and "endDateLectures" in defaults:
-            default_start_date = defaults["startDateLectures"]
-            default_end_date = defaults["endDateLectures"]
+        if "start_date_lectures" in defaults and "end_date_lectures" in defaults:
+            default_start_date = defaults["start_date_lectures"]
+            default_end_date = defaults["end_date_lectures"]
 
     for x in range(7):
         weekday = WEEKDAYS[x]
@@ -51,20 +51,20 @@ def get_source_slots(defaults: dict = None):
         default_end_hour = "10"
         default_end_minute = "30"
 
-        if defaults != {} and defaults is not None and "withLectures" in defaults:
+        if defaults != {} and defaults is not None and "with_lectures" in defaults:
             if (
-                defaults["withLectures"]
+                defaults["with_lectures"]
                 and weekday in defaults
-                and defaults[weekday]["areThereLectures"]
+                and defaults[weekday]["are_there_lectures"]
             ):
                 default_check = True
 
-                arr_start = defaults[weekday]["timeLectures"][
-                    "timeStartDateLecture"
+                arr_start = defaults[weekday]["time_lectures"][
+                    "time_start_date_lecture"
                 ].split(":")
-                arr_end = defaults[weekday]["timeLectures"]["timeEndDateLecture"].split(
-                    ":"
-                )
+                arr_end = defaults[weekday]["time_lectures"][
+                    "time_end_date_lecture"
+                ].split(":")
 
                 default_start_hour = arr_start[0]
                 default_start_minute = arr_start[1]
@@ -125,7 +125,7 @@ def get_source_slots(defaults: dict = None):
         [
             sg.Input(
                 disabled=True,
-                key="startLectures",
+                key="start_lectures",
                 size=(10, 1),
                 default_text=default_start_date,
             ),
@@ -136,7 +136,7 @@ def get_source_slots(defaults: dict = None):
         [
             sg.Input(
                 disabled=True,
-                key="endLectures",
+                key="end_lectures",
                 size=(10, 1),
                 default_text=default_end_date,
             ),
@@ -167,26 +167,28 @@ def get_source_slots(defaults: dict = None):
                         sum_of_lectures += 1
 
                 if sum_of_lectures > 0:
-                    infos["withLectures"] = True
-                    infos["weekRepsLectures"] = ""
+                    infos["with_lectures"] = True
+                    infos["week_reps_lectures"] = ""
 
-                    infos["startDateLectures"] = values["startLectures"]
-                    infos["endDateLectures"] = values["endLectures"]
+                    infos["start_date_lectures"] = values["start_lectures"]
+                    infos["end_date_lectures"] = values["end_lectures"]
                     for x in range(7):
                         infos[WEEKDAYS[x]] = {}
                         if values["CHECKBOX_" + WEEKDAYS[x]]:
-                            infos[WEEKDAYS[x]]["areThereLectures"] = True
-                            infos["weekRepsLectures"] += "1"
-                            infos[WEEKDAYS[x]]["timeLectures"] = {
-                                "timeStartDateLecture": values[
+                            infos[WEEKDAYS[x]]["are_there_lectures"] = True
+                            infos["week_reps_lectures"] += "1"
+                            infos[WEEKDAYS[x]]["time_lectures"] = {
+                                "time_start_date_lecture": values[
                                     "START_HOUR_" + WEEKDAYS[x]
                                 ]
                                 + ":"
                                 + values["START_MINUTE_" + WEEKDAYS[x]],
-                                "timeEndDateLecture": values["END_HOUR_" + WEEKDAYS[x]]
+                                "time_end_date_lecture": values[
+                                    "END_HOUR_" + WEEKDAYS[x]
+                                ]
                                 + ":"
                                 + values["END_MINUTE_" + WEEKDAYS[x]],
-                                "durationLecture": (
+                                "duration_lecture": (
                                     int(values["END_HOUR_" + WEEKDAYS[x]]) * 60
                                     + int(values["END_MINUTE_" + WEEKDAYS[x]])
                                 )
@@ -196,10 +198,10 @@ def get_source_slots(defaults: dict = None):
                                 ),
                             }
                         else:
-                            infos["weekRepsLectures"] += "0"
-                            infos[WEEKDAYS[x]]["areThereLectures"] = False
+                            infos["week_reps_lectures"] += "0"
+                            infos[WEEKDAYS[x]]["are_there_lectures"] = False
                 else:
-                    infos["withLectures"] = False
+                    infos["with_lectures"] = False
 
                 break
 
@@ -330,7 +332,7 @@ def get_study_slots(
     is_book: bool = True,
     is_video: bool = False,
     defaults: list | None = None,
-    source_ID: int | None = None,
+    source_id: int | None = None,
 ) -> list | None:
     combo_selection = ["Schematization", "Testing"]
 
@@ -366,8 +368,8 @@ def get_study_slots(
                     infos = copy.copy(defaults)
 
                     if (
-                        "areThereSessions" in defaults[WEEKDAYS[x]]
-                        and defaults[WEEKDAYS[x]]["areThereSessions"]
+                        "are_there_sessions" in defaults[WEEKDAYS[x]]
+                        and defaults[WEEKDAYS[x]]["are_there_Sessions"]
                         and j < defaults[WEEKDAYS[x]]["amount"]
                     ):
                         default_type = defaults[WEEKDAYS[x]]["types"][j]
@@ -463,12 +465,12 @@ def get_study_slots(
                 window[input_pages_key].update(visible=cond_type)
 
             if event == "SAVE_SLOTS":
-                infos["totalPages"] = 0
-                infos["totalMinutes"] = 0
-                infos["totalDuration"] = 0
+                infos["total_pages"] = 0
+                infos["total_minutes"] = 0
+                infos["total_duration"] = 0
                 infos["is_book"] = is_book
 
-                max_study_hour = get_settings_value("maxStudyHour")
+                max_study_hour = get_settings_value("max_study_hour")
 
                 cond_error_hours = False
                 cond_error_hours_index = False
@@ -478,10 +480,10 @@ def get_study_slots(
                     cond_error_hours_index = False
                     infos[WEEKDAYS[x]] = {}
                     if study_days[x]:
-                        infos[WEEKDAYS[x]]["isStudyDay"] = True
-                        infos[WEEKDAYS[x]]["areThereSessions"] = False
+                        infos[WEEKDAYS[x]]["is_study_day"] = True
+                        infos[WEEKDAYS[x]]["are_there_sessions"] = False
                         if arr_amount[x] > 0:
-                            infos[WEEKDAYS[x]]["areThereSessions"] = True
+                            infos[WEEKDAYS[x]]["are_there_sessions"] = True
                             infos[WEEKDAYS[x]]["amount"] = arr_amount[x]
                             infos[WEEKDAYS[x]]["types"] = []
                             infos[WEEKDAYS[x]]["durations"] = []
@@ -490,7 +492,7 @@ def get_study_slots(
                                 infos[WEEKDAYS[x]]["pages"] = []
                                 infos[WEEKDAYS[x]]["totalPages"] = 0
 
-                            infos[WEEKDAYS[x]]["totalDuration"] = 0
+                            infos[WEEKDAYS[x]]["total_duration"] = 0
                             for j in range(arr_amount[x]):
                                 if is_book:
                                     pages = int(
@@ -506,8 +508,8 @@ def get_study_slots(
                                         pages = 0
 
                                     infos[WEEKDAYS[x]]["pages"].append(pages)
-                                    infos[WEEKDAYS[x]]["totalPages"] += pages
-                                    infos["totalPages"] += pages
+                                    infos[WEEKDAYS[x]]["total_pages"] += pages
+                                    infos["total_pages"] += pages
                                 else:
                                     minutes = int(
                                         values[
@@ -522,8 +524,8 @@ def get_study_slots(
                                         minutes = 0
 
                                     infos[WEEKDAYS[x]]["minutes"].append(minutes)
-                                    infos[WEEKDAYS[x]]["totalMinutes"] += minutes
-                                    infos["totalMinutes"] += minutes
+                                    infos[WEEKDAYS[x]]["total_minutes"] += minutes
+                                    infos["total_minutes"] += minutes
 
                                 duration = int(
                                     values[
@@ -534,18 +536,18 @@ def get_study_slots(
                                     values[f"COMBO_TYPE_{j}_SESSION_{WEEKDAYS[x]}"]
                                 )
                                 infos[WEEKDAYS[x]]["durations"].append(duration)
-                                infos[WEEKDAYS[x]]["totalDuration"] += duration
-                                infos["totalDuration"] += duration
+                                infos[WEEKDAYS[x]]["total_duration"] += duration
+                                infos["total_duration"] += duration
 
                                 old_total_minutes = get_total_minutes(x)
-                                if source_ID is not None:
+                                if source_id is not None:
                                     old_total_minutes = get_total_minutes(
-                                        x, except_ID=source_ID
+                                        x, except_id=source_id
                                     )
 
                                 new_total_minutes = (
                                     old_total_minutes
-                                    + infos[WEEKDAYS[x]]["totalDuration"]
+                                    + infos[WEEKDAYS[x]]["total_duration"]
                                 )
                                 total_hours = new_total_minutes / 60
 
@@ -562,7 +564,7 @@ def get_study_slots(
                                         + f"{total_hours:.2f}.\n"
                                     )
                     else:
-                        infos[WEEKDAYS[x]]["isStudyDay"] = False
+                        infos[WEEKDAYS[x]]["is_study_day"] = False
 
                 if True in [cond_error_hours]:
                     if cond_error_hours:

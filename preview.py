@@ -33,7 +33,7 @@ def preview_card(text_front: str, text_back: str):
     ]
 
     window = sg.Window(
-        "PreviewCard",
+        "Preview Card",
         size=(500, 400),
         layout=layout,
         keep_on_top=True,

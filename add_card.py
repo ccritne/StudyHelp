@@ -1,4 +1,5 @@
 from functions import *
+from preview import preview_card
 
 
 def add_card():
@@ -21,8 +22,8 @@ def add_card():
                 sg.FileBrowse(file_types=(("Image Portable Network Graphics", "png"),)),
             ],
             [
-                sg.Button("Save", key="saveNewFlashcard"),
-                sg.Button("Preview", key="previewNewCard"),
+                sg.Button("Save", key="save_new_flashcard"),
+                sg.Button("Preview", key="preview_new_card"),
             ],
         ]
     ]
@@ -45,12 +46,15 @@ def add_card():
             if event == "addLatex":
                 add_latex_to_input_field(window)
 
-            if event == "saveNewFlashcard":
+            if event == "save_new_flashcard":
                 save_new_flashcard(
                     front=values["front"],
                     back=values["back"],
                     filename=values["filename"],
                 )
+                break
+            if event == "preview_new_flashcard":
+                preview_card(front=values["front"], back=values["back"])
                 break
 
     window.close()

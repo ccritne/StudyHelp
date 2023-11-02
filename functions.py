@@ -1,8 +1,8 @@
 import sqlite3
-from setup import con, cursor, WEEKDAYS
+from setup import *
 from tkinter import *
 import PySimpleGUI as sg
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import copy
 from io import BytesIO
 import matplotlib.pyplot as plt
@@ -120,19 +120,19 @@ def all_sources_names() -> list:
     return result
 
 
-def get_flashcards_for_table(source_ID: int) -> list:
+def get_flashcards_for_table(source_id: int) -> list:
     cursor.execute(
-        f"SELECT ID, front, back, deadline, box FROM flashcards WHERE source_ID = {source_ID}"
+        f"SELECT id, front, back, deadline, box FROM flashcards WHERE source_id = {source_id}"
     )
     result = cursor.fetchall()
 
     return result
 
 
-def get_today_flashcards_source(source_ID: int) -> list:
+def get_today_flashcards_source(source_id: int) -> list:
     today_str = datetime.now().strftime("%Y-%m-%d")
-    query = "SELECT ID, front, back, box, source_ID FROM flashcards WHERE deadline = ? AND source_ID = ? "
-    parameters = (today_str, source_ID)
+    query = "SELECT id, front, back, box, source_id FROM flashcards WHERE deadline = ? AND source_id = ? "
+    parameters = (today_str, source_id)
     cursor.execute(query, parameters)
 
     result = cursor.fetchall()
@@ -143,13 +143,13 @@ def get_today_flashcards_source(source_ID: int) -> list:
 def get_info_decks() -> list:
     today_str = datetime.now().strftime("%Y-%m-%d")
     cursor.execute(
-        f"""SELECT sources.ID,
+        f"""SELECT sources.id,
                                 sources.name,
                                 flashcards.deadline
                             FROM flashcards
                                 LEFT JOIN
-                                sources ON flashcards.source_ID = sources.ID
-                            ORDER BY sources.ID;
+                                sources ON flashcards.source_id = sources.id
+                            ORDER BY sources.id;
                         """
     )
 
@@ -201,24 +201,24 @@ def render_latex(
     return buffer.getvalue()
 
 
-def set_selected_source_ID(id: int | None):
-    global selected_source_ID
-    selected_source_ID = id
+def set_selected_source_id(id: int | None):
+    global selected_source_id
+    selected_source_id = id
 
 
-def get_selected_source_ID() -> int | None:
-    global selected_source_ID
-    return selected_source_ID
+def get_selected_source_id() -> int | None:
+    global selected_source_id
+    return selected_source_id
 
 
-def set_selected_flashcard_ID(id: int | None):
-    global selected_flashcard_ID
-    selected_flashcard_ID = id
+def set_selected_flashcard_id(id: int | None):
+    global selected_flashcard_id
+    selected_flashcard_id = id
 
 
-def get_selected_flashcard_ID() -> int | None:
-    global selected_flashcard_ID
-    return selected_flashcard_ID
+def get_selected_flashcard_id() -> int | None:
+    global selected_flashcard_id
+    return selected_flashcard_id
 
 
 def convert_to_bytes(filename: str, resize: dict | None = None) -> bytes:
@@ -235,7 +235,7 @@ def convert_to_bytes(filename: str, resize: dict | None = None) -> bytes:
 
 
 def get_source_values(source_id: int) -> tuple:
-    cursor.execute("SELECT * FROM sources WHERE ID=?", (source_id))
+    cursor.execute("SELECT * FROM sources WHERE id=?", (source_id))
 
     return cursor.fetchone()
 
@@ -288,11 +288,11 @@ def get_table_deck() -> list:
     return table_deck
 
 
-def get_total_minutes(index_day, except_ID=None):
+def get_total_minutes(index_day, except_id=None):
     query = "SELECT arrSessions FROM sources "
 
-    if except_ID is not None:
-        query = query + " WHERE ID <> " + str(except_ID)
+    if except_id is not None:
+        query = query + " WHERE id <> " + str(except_id)
 
     cursor.execute(query)
     result = cursor.fetchall()
@@ -474,11 +474,11 @@ def add_latex_to_input_field(window):
         widget.mark_set(INSERT, f"{cursor_position}+7c")
 
 
-def save_scheme(flashcardID, filename):
+def save_scheme(flashcardid, filename):
     exitMessage = "EXIT_SUCCESS"
     if exists_filename(filename):
         cursor.execute(
-            "UPDATE flashcards SET filenameScheme=? WHERE ID=?", (filename, flashcardID)
+            "UPDATE flashcards SET filenameScheme=? WHERE id=?", (filename, flashcardid)
         )
         con.commit()
     else:
@@ -490,18 +490,18 @@ def save_scheme(flashcardID, filename):
 
 def creation_db():
     SQL_SOURCES = """ CREATE TABLE IF NOT EXISTS sources (
-                                    ID           INTEGER     NOT NULL
+                                    id           INTEGER     NOT NULL
                                                             UNIQUE,
-                                    courseName   TEXT,
+                                    course_name   TEXT,
                                     name         TEXT        NOT NULL,
-                                    numberPages  INTEGER (5),
-                                    studiedPages INTEGER (5),
+                                    number_pages  INTEGER (5),
+                                    studied_pages INTEGER (5),
                                     filename     TEXT,
                                     deadline     TEXT (10),
-                                    arrSessions  TEXT,
-                                    insertDate   TEXT (10)   NOT NULL,
+                                    arr_sessions  TEXT,
+                                    insert_date   TEXT (10)   NOT NULL,
                                     PRIMARY KEY (
-                                        ID AUTOINCREMENT
+                                        id AUTOINCREMENT
                                     )
                                 ); """
 
@@ -509,51 +509,51 @@ def creation_db():
     con.commit()
 
     SQL_FLASHCARDS = """CREATE TABLE IF NOT EXISTS flashcards (
-                                    ID             INTEGER     PRIMARY KEY AUTOINCREMENT
+                                    id             INTEGER     PRIMARY KEY AUTOINCREMENT
                                                             NOT NULL,
                                     front          TEXT        NOT NULL,
                                     back           TEXT,
                                     deadline       TEXT (10),
                                     box            INTEGER (2) NOT NULL,
-                                    sourceID       INTEGER     NOT NULL,
-                                    filenameScheme TEXT
+                                    sourceid       INTEGER     NOT NULL,
+                                    filename_scheme TEXT
                                 );"""
 
     cursor.execute(SQL_FLASHCARDS)
     con.commit()
 
     SQL_SETTINGS = """CREATE TABLE IF NOT EXISTS settings (
-                                    defaultHourNotification INTEGER (2) DEFAULT (15) 
+                                    default_hour_notification INTEGER (2) DEFAULT (15) 
                                                                         UNIQUE ON CONFLICT IGNORE,
-                                    maxStudyHour            INTEGER (2) DEFAULT (8) 
+                                    max_study_hour            INTEGER (2) DEFAULT (8) 
                                                                         UNIQUE ON CONFLICT IGNORE,
-                                    studyDays               TEXT (7)    DEFAULT [0000000]
+                                    study_days               TEXT (7)    DEFAULT [0000000]
                                                                         UNIQUE ON CONFLICT IGNORE,
-                                    maxSubjectsDay          INTEGER (1) DEFAULT (1) 
+                                    max_subjects_day          INTEGER (1) DEFAULT (1) 
                                                                         UNIQUE ON CONFLICT IGNORE
                                 );"""
 
     cursor.execute(SQL_SETTINGS)
     con.commit()
 
-    SQL_SETTINGS_DATA = """INSERT INTO settings(defaultHourNotification, maxStudyHour, studyDays, maxSubjectsDay) VALUES (15, 8, '0000000', 1);"""
+    SQL_SETTINGS_DATA = """INSERT INTO settings(default_hour_notification, max_study_hour, study_days, max_subjects_day) VALUES (15, 8, '0000000', 1);"""
 
     cursor.execute(SQL_SETTINGS_DATA)
     con.commit()
 
     SQL_CALENDAR = """CREATE TABLE IF NOT EXISTS calendar (
-                                    ID            INTEGER   NOT NULL,
+                                    id            INTEGER   NOT NULL,
                                     type          TEXT,
                                     description   TEXT,
-                                    insertedDay   TEXT (10) NOT NULL,
+                                    inserted_day   TEXT (10) NOT NULL,
                                     date          TEXT (10) NOT NULL,
-                                    timeStartDate TEXT (5),
-                                    timeEndDate   TEXT (5),
-                                    startSession  INTEGER,
-                                    endSession    INTEGER,
-                                    sourceID      INTEGER,
+                                    time_start_date TEXT (5),
+                                    time_end_date   TEXT (5),
+                                    start_session  INTEGER,
+                                    end_session    INTEGER,
+                                    source_id      INTEGER,
                                     PRIMARY KEY (
-                                        ID AUTOINCREMENT
+                                        id AUTOINCREMENT
                                     )
                                 );"""
 
@@ -562,7 +562,7 @@ def creation_db():
 
 
 def update_all_deadlines():
-    cursor.execute("SELECT ID, numberPages, studiedPages, arrSessions FROM sources;")
+    cursor.execute("SELECT id, numberPages, studiedPages, arrSessions FROM sources;")
     sources = cursor.fetchall()
     for x in sources:
         arrSessionWeek = ast.literal_eval(x[3])
@@ -575,7 +575,7 @@ def update_all_deadlines():
             )
         )
         cursor.execute(
-            "UPDATE sources SET deadline = ? WHERE ID = ?;", (upDeadline, x[0])
+            "UPDATE sources SET deadline = ? WHERE id = ?;", (upDeadline, x[0])
         )
         con.commit()
 
@@ -585,19 +585,19 @@ def save_new_flashcard(front, back, filename):
     text_back = back
     box = 0
     deadline = datetime.now().strftime("%Y-%m-%d")
-    source_ID = get_selected_source_ID()
+    source_id = get_selected_source_id()
     filename_scheme = filename
 
     cursor.execute(
-        "INSERT INTO flashcards(front, back, box, deadline, source_ID, filename_scheme) VALUES (?, ?, ?, ?, ?, ?)",
-        (text_front, text_back, box, deadline, source_ID, filename_scheme),
+        "INSERT INTO flashcards(front, back, box, deadline, source_id, filename_scheme) VALUES (?, ?, ?, ?, ?, ?)",
+        (text_front, text_back, box, deadline, source_id, filename_scheme),
     )
     con.commit()
 
 
-def update_flashcard(flashcard_ID, front, back):
+def update_flashcard(flashcard_id, front, back):
     cursor.execute(
-        "UPDATE flashcards SET front = ?, back = ? WHERE ID = ?",
-        (front, back, flashcard_ID),
+        "UPDATE flashcards SET front = ?, back = ? WHERE id = ?",
+        (front, back, flashcard_id),
     )
     con.commit()

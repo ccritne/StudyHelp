@@ -1,14 +1,14 @@
 from functions import *
 
 
-def save_scheme(flashcard_ID, values):
-    filename = values["filenameScheme"]
+def save_scheme(flashcard_id: int, filename: str):
     exit_message = "EXIT_SUCCESS"
 
     if exists_filename(filename):
-        query = f"UPDATE flashcards SET filenameScheme=? WHERE ID=?"
-        parameters = (filename, flashcard_ID)
-        cursor.execute(query, parameters)
+        cursor.execute(
+            "UPDATE flashcards SET filenameScheme=? WHERE id=?",
+            (filename, flashcard_id),
+        )
         con.commit()
     else:
         sg.popup_error("Path Wrong", keep_on_top=True, modal=True)
@@ -17,14 +17,14 @@ def save_scheme(flashcard_ID, values):
     return exit_message
 
 
-def update_scheme(flashcard_ID: int) -> (str, str):
+def update_scheme(flashcard_id: int) -> (str, str):
     layout = [
         [sg.Text("Please, select a file", size=(20, 1))],
         [
-            sg.InputText(key="filenameScheme"),
+            sg.InputText(key="filename_scheme"),
             sg.FileBrowse(file_types=(("Image Portable Network Graphics", "*.png"),)),
         ],
-        [sg.Column([[sg.Button("Save", key="Save_scheme")]], justification="right")],
+        [sg.Column([[sg.Button("Save", key="save_scheme")]], justification="right")],
     ]
 
     window = sg.Window(
@@ -41,8 +41,10 @@ def update_scheme(flashcard_ID: int) -> (str, str):
             exit_message = "EXIT_WINDOW"
             break
 
-        if event == "Save_scheme":
-            if "EXIT_SUCCESS" == save_scheme(flashcard_ID, values):
+        if event == "save_scheme":
+            if "EXIT_SUCCESS" == save_scheme(
+                flashcard_id=flashcard_id, filename=values["filename_scheme"]
+            ):
                 break
 
     window.close()

@@ -9,8 +9,8 @@ def make_main_window():
     menu_layout = [
         [sg.Button("Deck & Flashcards", key="browse_flashcards", size=225)],
         [sg.Button("Check deadlines", key="deadlines", size=225)],
-        [sg.Button("Today source session", key="todayStudySource", size=225)],
-        [sg.Button("To-Do List", key="todolist", size=225)],
+        [sg.Button("Today source session", key="today_study_source", size=225)],
+        [sg.Button("To-Do List", key="to_do_list", size=225)],
         [sg.Button("Settings", key="settings", size=225)],
     ]
 
@@ -18,7 +18,7 @@ def make_main_window():
         [
             sg.Table(
                 values=[],
-                headings=["ID", "Source Name", "Deadline"],
+                headings=["id", "Source Name", "Deadline"],
                 hide_vertical_scroll=True,
                 justification="center",
                 select_mode="none",
@@ -35,8 +35,8 @@ def make_main_window():
         [
             sg.Text("Max study hour", size=(20, 1)),
             sg.Input(
-                default_text=get_settings_value("maxStudyHour"),
-                key="maxStudyHour",
+                default_text=get_settings_value("max_study_hour"),
+                key="max_study_hour",
                 size=(5, 1),
             ),
         ],
@@ -44,8 +44,8 @@ def make_main_window():
             sg.Text("Hour for Notification", size=(20, 1)),
             sg.Combo(
                 [x for x in range(8, 24)],
-                key="defaultHourNotification",
-                default_value=get_settings_value("defaultHourNotification"),
+                key="default_hour_notification",
+                default_value=get_settings_value("default_hour_notification"),
                 size=(3, 1),
             ),
         ],
@@ -61,51 +61,51 @@ def make_main_window():
         [sg.Text("Days ")],
         [
             sg.Checkbox(
-                text="Mon",
+                text=WEEKDAYS[0],
                 size=(6, 1),
-                key="monSettings",
+                key="mon_settings",
                 default=bool(int(study_days[0])),
             ),
             sg.Checkbox(
-                text="Fri",
+                text=WEEKDAYS[4],
                 size=(6, 1),
-                key="friSettings",
+                key="fri_settings",
                 default=bool(int(study_days[4])),
             ),
         ],
         [
             sg.Checkbox(
-                text="Tue",
+                text=WEEKDAYS[1],
                 size=(6, 1),
-                key="tueSettings",
+                key="tue_settings",
                 default=bool(int(study_days[1])),
             ),
             sg.Checkbox(
-                text="Sat",
+                text=WEEKDAYS[5],
                 size=(6, 1),
-                key="satSettings",
+                key="sat_settings",
                 default=bool(int(study_days[5])),
             ),
         ],
         [
             sg.Checkbox(
-                text="Wed",
+                text=WEEKDAYS[2],
                 size=(6, 1),
-                key="wedSettings",
+                key="wed_settings",
                 default=bool(int(study_days[2])),
             ),
             sg.Checkbox(
-                text="Sun",
+                text=WEEKDAYS[6],
                 size=(6, 1),
-                key="sunSettings",
+                key="sun_settings",
                 default=bool(int(study_days[6])),
             ),
         ],
         [
             sg.Checkbox(
-                text="Thu",
+                text=WEEKDAYS[3],
                 size=(6, 1),
-                key="thuSettings",
+                key="thu_settings",
                 default=bool(int(study_days[3])),
             )
         ],
@@ -134,7 +134,9 @@ def make_main_window():
         ],
     ]
 
-    window = sg.Window(title="StudyHelp", layout=layout, size=(300, 400), finalize=True)
+    window = sg.Window(
+        title="Study Help", layout=layout, size=(300, 400), finalize=True
+    )
 
     while True:
         event, values = window.read()
@@ -148,18 +150,18 @@ def make_main_window():
 
             if event == "deadlines":
                 sources = cursor.execute(
-                    "SELECT ID, name, deadline FROM sources"
+                    "SELECT id, name, deadline FROM sources"
                 ).fetchall()
-                window["deadlinesDeck"].update(values=sources)
+                window["deadlines_deck"].update(values=sources)
                 from_to("Menu", "Deadlines", window)
 
             if event == "settings":
                 from_to("Menu", "Settings", window)
 
-            if event == "todolist":
+            if event == "to_do_list":
                 see_to_do_list()
 
-            if event == "todayStudySource":
+            if event == "today_study_source":
                 see_today_sessions()
 
             ### END BINDING mENU_lAYOUT EVENTS
@@ -173,7 +175,7 @@ def make_main_window():
 
             ### EVENTS FOR BROWSING FLASHCARDS AND DECKS
 
-            if event == "browseFlashcards":
+            if event == "browse_flashcards":
                 browse_flashcards()
 
             ###
@@ -182,35 +184,34 @@ def make_main_window():
 
             if "EVENT_MENU" in event:
                 if "Settings" in event:
-                    max_study_hour = int(values["maxStudyHour"])
-                    default_hour_notification = int(values["defaultHourNotification"])
-                    max_subjects_day = int(values["maxSubjectsDay"])
+                    max_study_hour = int(values["max_study_hour"])
+                    default_hour_notification = int(values["default_hour_notification"])
+                    max_subjects_day = int(values["max_subjects_day"])
 
                     study_days = "".join(
                         [
-                            str(int(window["monSettings"].get())),
-                            str(int(window["tueSettings"].get())),
-                            str(int(window["wedSettings"].get())),
-                            str(int(window["thuSettings"].get())),
-                            str(int(window["friSettings"].get())),
-                            str(int(window["satSettings"].get())),
-                            str(int(window["sunSettings"].get())),
+                            str(int(window["mon_settings"].get())),
+                            str(int(window["tue_settings"].get())),
+                            str(int(window["wed_settings"].get())),
+                            str(int(window["thu_settings"].get())),
+                            str(int(window["fri_settings"].get())),
+                            str(int(window["sat_settings"].get())),
+                            str(int(window["sun_settings"].get())),
                         ]
                     )
 
-                    query = """UPDATE settings SET  maxStudyHour= ? , 
-                                                    defaultHourNotification = ?, 
-                                                    studyDays = ?,
-                                                    maxSubjectsDay = ?"""
-
-                    parameters = (
-                        max_study_hour,
-                        default_hour_notification,
-                        study_days,
-                        max_subjects_day,
+                    cursor.execute(
+                        """UPDATE settings SET  max_study_hour= ? , 
+                                                    default_hour_notification = ?, 
+                                                    study_days = ?,
+                                                    max_subjects_day = ?""",
+                        (
+                            max_study_hour,
+                            default_hour_notification,
+                            study_days,
+                            max_subjects_day,
+                        ),
                     )
-
-                    cursor.execute(query, parameters)
                     con.commit()
 
                 from_to(get_actual_page(), "Menu", window)

@@ -16,7 +16,7 @@ def today_study_flashcards() -> str:
             sg.Text("Front: "),
             sg.Column(
                 layout=get_front_layout(),
-                key="frontLayout",
+                key="front_layout",
                 scrollable=True,
                 vertical_scroll_only=True,
                 expand_x=True,
@@ -25,16 +25,16 @@ def today_study_flashcards() -> str:
                 justification="center",
             ),
         ],
-        [sg.Input(key="backTryInput")],
+        [sg.Input(key="back_try_input")],
         [
-            sg.Text("Your try: ", visible=False, key="displayTextBackTryInput"),
-            sg.Text(key="textBackTryInput", visible=False),
+            sg.Text("Your try: ", visible=False, key="display_text_back_try_input"),
+            sg.Text(key="text_back_try_input", visible=False),
         ],
         [
-            sg.Text("Solution: ", visible=False, key="displayTextSolution"),
+            sg.Text("Solution: ", visible=False, key="display_text_solution"),
             sg.Column(
                 layout=get_back_layout(),
-                key="backLayout",
+                key="back_layout",
                 visible=False,
                 scrollable=True,
                 vertical_scroll_only=True,
@@ -46,12 +46,12 @@ def today_study_flashcards() -> str:
         ],
         [sg.HorizontalSeparator()],
         [
-            sg.Button("No", key="backZero", visible=False),
-            sg.Button("Yes", key="advanceBox", visible=False),
-            sg.Button("Scheme", key="seeScheme", visible=False, button_color="Orange"),
+            sg.Button("No", key="back_zero", visible=False),
+            sg.Button("Yes", key="advance_box", visible=False),
+            sg.Button("Scheme", key="see_scheme", visible=False, button_color="Orange"),
         ],
-        [sg.Button("Back", key="EVENT_BACK_StudyLayout")],
-        [sg.Button("Solution", key="seeSolution", button_color="Green")],
+        [sg.Button("Back", key="EVENT_BACK_study_layout")],
+        [sg.Button("Solution", key="see_solution", button_color="Green")],
         [sg.Button("Home", key="EVENT_HOME_Today")],
     ]
 
@@ -59,7 +59,7 @@ def today_study_flashcards() -> str:
         "Flashcard", layout=layout, finalize=True, keep_on_top=True, modal=True
     )
 
-    window["backTryInput"].bind("<Return>", "_Enter")
+    window["back_try_input"].bind("<Return>", "_Enter")
 
     while True:
         event, values = window.read()
@@ -68,29 +68,29 @@ def today_study_flashcards() -> str:
             break
 
         if event is not None:
-            if event == "seeScheme":
-                flashcard_ID = get_flashcards_array()[0][0]
-                view_scheme(flashcard_ID)
+            if event == "see_scheme":
+                flashcard_id = get_flashcards_array()[0][0]
+                view_scheme(flashcard_id)
 
-            if event in ["backTryInput_Enter", "seeSolution"]:
-                window["backTryInput"].update(visible=False)
-                window["displayTextBackTryInput"].update(visible=True)
-                window["displayTextSolution"].update(visible=True)
-                window["textBackTryInput"].update(visible=True)
-                window["textBackTryInput"].update(value=values["backTryInput"])
+            if event in ["back_try_input_Enter", "see_solution"]:
+                window["back_try_input"].update(visible=False)
+                window["display_text_back_try_input"].update(visible=True)
+                window["display_text_solution"].update(visible=True)
+                window["text_back_try_input"].update(visible=True)
+                window["text_back_try_input"].update(value=values["back_try_input"])
 
-                window["backLayout"].update(visible=True)
+                window["back_layout"].update(visible=True)
 
-                window["backZero"].update(visible=True)
-                window["advanceBox"].update(visible=True)
-                window["seeScheme"].update(visible=True)
+                window["back_zero"].update(visible=True)
+                window["advance_box"].update(visible=True)
+                window["see_scheme"].update(visible=True)
 
-            if event in ["backZero", "advanceBox"]:
-                flashcard_ID = get_flashcards_array()[0][0]
+            if event in ["back_zero", "advance_box"]:
+                flashcard_id = get_flashcards_array()[0][0]
 
                 new_box = 0
                 deadline_str = datetime.now().strftime("%Y-%m-%d")
-                if event == "advanceBox":
+                if event == "advance_box":
                     deadline_str = (
                         datetime.now()
                         + timedelta(days=pow(2, get_flashcards_array()[0][3]))
@@ -106,7 +106,8 @@ def today_study_flashcards() -> str:
                 # the second rep is after 1 day not after 2 days.
 
                 cursor.execute(
-                    f"""UPDATE flashcards SET deadline="{deadline_str}", box={new_box} WHERE ID={flashcard_ID}"""
+                    "UPDATE flashcards SET deadline=?, box=? WHERE id=?",
+                    (deadline_str, new_box, flashcard_id),
                 )
                 con.commit()
 

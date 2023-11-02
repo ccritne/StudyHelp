@@ -16,11 +16,11 @@ sources_array: list = []
 flashcards_array: list = []
 table_deck: list = []
 
-played_source_ID: int | None = None
-played_flashcard_ID: int | None = None
+played_source_id: int | None = None
+played_flashcard_id: int | None = None
 
-selected_source_ID: int | None = None
-selected_flashcard_ID: int | None = None
+selected_source_id: int | None = None
+selected_flashcard_id: int | None = None
 
 front_input_selected: bool = False
 back_input_selected: bool = False

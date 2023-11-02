@@ -17,30 +17,30 @@ def update_flashcards_inputs(window: sg.Window, front: str, back: str):
 
 
 def update_selected_source(window: sg.Window, row: int):
-    source_ID = None
+    source_id = None
     sources_arr = get_sources_array()
 
     if row is not None and sources_arr != []:
-        source_ID = sources_arr[row][0]
-        window["tableSources"].update(select_rows=[row])
+        source_id = sources_arr[row][0]
+        window["table_sources"].update(select_rows=[row])
 
-    set_selected_source_ID(source_ID)
+    set_selected_source_id(source_id)
 
     update_flashcards_table(window)
     update_selected_flashcards(window, 0)
 
 
 def update_flashcards_table(window: sg.Window):
-    source_ID = get_selected_source_ID()
+    source_id = get_selected_source_id()
 
     flashcards_arr = []
 
-    if source_ID is not None:
-        flashcards_arr = get_flashcards_for_table(source_ID)
+    if source_id is not None:
+        flashcards_arr = get_flashcards_for_table(source_id)
 
     set_flashcards_array(flashcards_arr)
 
-    window["tableFlashcards"].update(values=flashcards_arr)
+    window["table_flashcards"].update(values=flashcards_arr)
 
 
 def update_sources_table(window: sg.Window):
@@ -48,7 +48,7 @@ def update_sources_table(window: sg.Window):
 
     set_sources_array(sources_names)
 
-    window["tableSources"].update(values=sources_names)
+    window["table_sources"].update(values=sources_names)
 
 
 def update_selected_flashcards(window: sg.Window, row: int):
@@ -57,18 +57,18 @@ def update_selected_flashcards(window: sg.Window, row: int):
     front = str()
     back = str()
 
-    sl_flashcard_ID = None
+    sl_flashcard_id = None
 
     if flashcards_arr != []:
         if row > len(flashcards_arr):
             row = 0
 
-        sl_flashcard_ID = flashcards_arr[row][0]
+        sl_flashcard_id = flashcards_arr[row][0]
         front = flashcards_arr[row][1]
         back = flashcards_arr[row][2]
-        window["tableFlashcards"].update(select_rows=[row])
+        window["table_flashcards"].update(select_rows=[row])
 
-    set_selected_flashcard_ID(sl_flashcard_ID)
+    set_selected_flashcard_id(sl_flashcard_id)
     update_flashcards_inputs(window=window, front=front, back=back)
 
 
@@ -85,31 +85,31 @@ def browse_flashcards():
 
     sources_names = all_sources_names()
 
-    set_selected_source_ID(None)
+    set_selected_source_id(None)
     set_row_sources(None)
-    set_selected_flashcard_ID(None)
+    set_selected_flashcard_id(None)
     set_row_flashcards(None)
 
     set_flashcards_array([])
 
     if sources_names != []:
-        first_source_ID = sources_names[0][0]
-        set_selected_source_ID(first_source_ID)
+        first_source_id = sources_names[0][0]
+        set_selected_source_id(first_source_id)
         set_row_sources(0)
 
-        flashcards_arr = get_flashcards_for_table(first_source_ID)
+        flashcards_arr = get_flashcards_for_table(first_source_id)
         set_flashcards_array(flashcards_arr)
 
-        first_flashcard_ID = None
+        first_flashcard_id = None
         row_flashcard = None
 
         if flashcards_arr != []:
-            first_flashcard_ID = flashcards_arr[0][0]
+            first_flashcard_id = flashcards_arr[0][0]
             row_flashcard = 0
         else:
             cond_layout_flashcards_visible = False
 
-        set_selected_flashcard_ID(first_flashcard_ID)
+        set_selected_flashcard_id(first_flashcard_id)
         set_row_flashcards(row_flashcard)
 
     else:
@@ -124,10 +124,14 @@ def browse_flashcards():
         ["Add source", "Open source", "Change file", "Modify source", "Delete source"],
     ]
 
+    values_table_sources = [[]]
+    if sources_names is not None:
+        values_table_sources = sources_names
+
     sources_table = sg.Table(
-        values=sources_names if sources_names is not None else [[]],
-        headings=["ID", "Name"],
-        key="tableSources",
+        values=values_table_sources,
+        headings=["id", "Name"],
+        key="table_sources",
         enable_click_events=True,
         justification="l",
         hide_vertical_scroll=True,
@@ -144,10 +148,14 @@ def browse_flashcards():
         ["Add card", "Delete card", "Reschedule expired cards"],
     ]
 
+    values_table_flashcards = [[]]
+    if flashcards_arr is not None:
+        values_table_flashcards = flashcards_arr
+
     flashcards_table = sg.Table(
-        values=flashcards_arr if flashcards_arr is not None else [[]],
-        headings=["ID", "Front", "Back", "Deadline", "Box"],
-        key="tableFlashcards",
+        values=values_table_flashcards,
+        headings=["id", "Front", "Back", "Deadline", "Box"],
+        key="table_flashcards",
         justification="l",
         hide_vertical_scroll=True,
         enable_click_events=True,
@@ -174,7 +182,7 @@ def browse_flashcards():
         back_default_text = flashcards_arr[0][2]
 
     flashcard_inputs = [
-        [sg.Column([[sg.Button("Latex", key="addLatex")]], justification="right")],
+        [sg.Column([[sg.Button("Latex", key="add_latex")]], justification="right")],
         [
             sg.Text("Front"),
             sg.InputText(
@@ -196,8 +204,8 @@ def browse_flashcards():
             ),
         ],
         [
-            sg.Button("Save", key="saveFlashcard"),
-            sg.Button("View Scheme", key="viewScheme"),
+            sg.Button("Save", key="save_flashcard"),
+            sg.Button("View Scheme", key="view_scheme"),
             sg.Button("Preview", key="preview_card"),
         ],
     ]
@@ -248,10 +256,10 @@ def browse_flashcards():
                 row = event[2][0]
 
                 match event[0]:
-                    case "tableSources":
+                    case "table_sources":
                         set_row_sources(row=row)
                         update_selected_source(window=window, row=row)
-                    case "tableFlashcards":
+                    case "table_flashcards":
                         set_front_input_selected(False)
                         set_back_input_selected(False)
                         set_row_flashcards(row=row)
@@ -261,8 +269,8 @@ def browse_flashcards():
 
             ### EVENTS FOR VIEWING AND LOADING SCHEME
 
-            if event == "viewScheme":
-                view_scheme(flashcard_ID=get_selected_flashcard_ID())
+            if event == "view_scheme":
+                view_scheme(flashcard_id=get_selected_flashcard_id())
 
             ###
 
@@ -270,7 +278,7 @@ def browse_flashcards():
 
             if event in ["front_Enter", "back_Enter", "saveFlashcard"]:
                 update_flashcard(
-                    flashcard_ID=get_selected_flashcard_ID(),
+                    flashcard_id=get_selected_flashcard_id(),
                     front=values["front"],
                     back=values["back"],
                 )
@@ -279,7 +287,7 @@ def browse_flashcards():
 
             check_input_click(event)
 
-            if event == "addLatex":
+            if event == "add_latex":
                 add_latex_to_input_field(window)
 
             if event == "preview_card":
@@ -309,11 +317,12 @@ def browse_flashcards():
                 )
                 if response == "Yes":
                     cursor.execute(
-                        f"DELETE FROM sources WHERE ID={get_selected_source_ID()}"
+                        "DELETE FROM sources WHERE id=?", (get_selected_source_id(),)
                     )
                     con.commit()
                     cursor.execute(
-                        f"DELETE FROM flashcards WHERE source_ID={get_selected_source_ID()}"
+                        "DELETE FROM flashcards WHERE source_id=?",
+                        (get_selected_source_id(),),
                     )
                     con.commit()
 
@@ -321,7 +330,8 @@ def browse_flashcards():
 
             if event == "Open source":
                 filename = cursor.execute(
-                    f"SELECT filename FROM sources where ID={get_selected_source_ID()}"
+                    "SELECT filename FROM sources where id=?",
+                    (get_selected_source_id(),),
                 ).fetchone()[0]
                 if filename in [None, ""]:
                     filename = sg.popup_get_file(
@@ -333,7 +343,11 @@ def browse_flashcards():
                         modal=True,
                     )
                     cursor.execute(
-                        f'UPDATE sources SET filename="{filename}" WHERE ID={get_selected_source_ID()}'
+                        "UPDATE sources SET filename=? WHERE id=?",
+                        (
+                            filename,
+                            get_selected_source_id(),
+                        ),
                     )
                     con.commit()
                 else:
@@ -343,7 +357,8 @@ def browse_flashcards():
 
             if event == "Change file":
                 old_filename = cursor.execute(
-                    f"SELECT filename FROM sources where ID={get_selected_source_ID()}"
+                    "SELECT filename FROM sources where id=?",
+                    (get_selected_source_id(),),
                 ).fetchone()[0]
                 filename = sg.popup_get_file(
                     "Please, select a file",
@@ -353,9 +368,14 @@ def browse_flashcards():
                     keep_on_top=True,
                     modal=True,
                 )
-                if filename not in [None, ""]:
+
+                if exists_filename(filename=filename):
                     cursor.execute(
-                        f'UPDATE sources SET filename="{filename}" WHERE ID={get_selected_source_ID()}'
+                        "UPDATE sources SET filename=? WHERE id=?",
+                        (
+                            filename,
+                            get_selected_source_id(),
+                        ),
                     )
                     con.commit()
 
@@ -367,28 +387,29 @@ def browse_flashcards():
                 add_card()
                 update_flashcards_table(window)
                 update_selected_flashcards(window, len(get_flashcards_array()) - 1)
-                window["tableFlashcards"].Widget.see(len(get_flashcards_array()))
+                window["table_flashcards"].Widget.see(len(get_flashcards_array()))
                 if not cond_layout_flashcards_visible:
                     cond_layout_flashcards_visible = True
 
             if event == "Delete card":
                 cursor.execute(
-                    f"DELETE FROM flashcards WHERE ID={get_selected_flashcard_ID()}"
+                    "DELETE FROM flashcards WHERE id=?", (get_selected_flashcard_id(),)
                 )
                 con.commit()
                 update_flashcards_table(window)
                 update_selected_flashcards(window, 0)
-                window["tableFlashcards"].Widget.see(1)
+                window["table_flashcards"].Widget.see(1)
 
             if event == "Reschedule expired cards":
                 today_str = datetime.now().strftime("%Y-%m-%d")
-                query = "UPDATE flashcards SET deadline = ? WHERE deadline < ?"
-                parameters = (today_str, today_str)
-                cursor.execute(query, parameters)
+                cursor.execute(
+                    "UPDATE flashcards SET deadline = ? WHERE deadline < ?",
+                    (today_str, today_str),
+                )
                 con.commit()
                 update_flashcards_table(window)
                 update_selected_flashcards(window, 0)
-                window["tableFlashcards"].Widget.see(1)
+                window["table_flashcards"].Widget.see(1)
 
             ##
 

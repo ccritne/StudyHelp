@@ -15,7 +15,7 @@ def see_today_sessions():
             )
         ],
         [sg.HorizontalSeparator()],
-        [sg.Button("Start", key="startDeck")],
+        [sg.Button("Start", key="start_deck")],
     ]
 
     window = sg.Window(
@@ -30,11 +30,11 @@ def see_today_sessions():
             break
 
         if event is not None:
-            if event == "startDeck":
-                played_source_ID = get_table_deck()[values["info_decks"][0]][0]
+            if event == "start_deck":
+                played_source_id = get_table_deck()[values["info_decks"][0]][0]
 
                 today_flashcards_of_source = get_today_flashcards_source(
-                    played_source_ID
+                    played_source_id
                 )
 
                 set_flashcards_array(today_flashcards_of_source)
