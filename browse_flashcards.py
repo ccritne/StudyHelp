@@ -6,23 +6,31 @@ from add_card import add_card
 
 
 def update_flashcards_inputs(window: sg.Window, front: str, back: str):
+    """
+    It updates the text of the flashcards inner the InputText.
+    """
+
+    visible_flashcars_inputs = False
     if len(get_flashcards_array()) > 0:
-        window["flashcard_inputs"].update(visible=True)
-        window["front"].update(value=front)
-        window["back"].update(value=back)
-    else:
-        window["flashcard_inputs"].update(visible=False)
-        window["front"].update(value="")
-        window["back"].update(value="")
+        visible_flashcars_inputs = True
+
+    window["flashcard_inputs"].update(visible=visible_flashcars_inputs)
+    window["front"].update(value=front)
+    window["back"].update(value=back)
 
 
 def update_selected_source(window: sg.Window, row: int):
+    """
+    It highlights the selected source.
+    """
+
     source_id = None
     sources_arr = get_sources_array()
 
     if row is not None and sources_arr != []:
         source_id = sources_arr[row][0]
         window["table_sources"].update(select_rows=[row])
+        set_row_sources(row=row)
 
     set_selected_source_id(source_id)
 
@@ -31,6 +39,10 @@ def update_selected_source(window: sg.Window, row: int):
 
 
 def update_flashcards_table(window: sg.Window):
+    """
+    It changes the values of flashcards table with the flashcards
+    of the selected source.
+    """
     source_id = get_selected_source_id()
 
     flashcards_arr = []
@@ -52,6 +64,9 @@ def update_sources_table(window: sg.Window):
 
 
 def update_selected_flashcards(window: sg.Window, row: int):
+    """
+    It highlights the selected flashcard.
+    """
     flashcards_arr = get_flashcards_array()
 
     front = str()
@@ -60,13 +75,14 @@ def update_selected_flashcards(window: sg.Window, row: int):
     sl_flashcard_id = None
 
     if flashcards_arr != []:
-        if row > len(flashcards_arr):
+        if row > len(flashcards_arr) and row <= 1:
             row = 0
 
         sl_flashcard_id = flashcards_arr[row][0]
         front = flashcards_arr[row][1]
         back = flashcards_arr[row][2]
         window["table_flashcards"].update(select_rows=[row])
+        set_row_flashcards(row=row)
 
     set_selected_flashcard_id(sl_flashcard_id)
     update_flashcards_inputs(window=window, front=front, back=back)
@@ -81,10 +97,15 @@ def update_tables(window):
 
 
 def browse_flashcards():
+    """
+    It shows all decks and all the flashcards of selected deck.
+    """
+    # If there are flashcards to display I will display it
     cond_layout_flashcards_visible = True
 
-    sources_names = all_sources_names()
+    sources_names = all_sources_names()  # List of dicts with IDs and names
 
+    # Initial values for selected_source_id, row_sources, selected_flashcard_id, row_flashcards
     set_selected_source_id(None)
     set_row_sources(None)
     set_selected_flashcard_id(None)
@@ -93,17 +114,26 @@ def browse_flashcards():
     set_flashcards_array([])
 
     if sources_names != []:
+        # Exists almost one source
+
+        # To default I set the first source as selected
         first_source_id = sources_names[0][0]
         set_selected_source_id(first_source_id)
         set_row_sources(0)
 
-        flashcards_arr = get_flashcards_for_table(first_source_id)
+        flashcards_arr = get_flashcards_for_table(
+            first_source_id
+        )  # Gets the flashcards of the first source
         set_flashcards_array(flashcards_arr)
 
+        # To default I set the next values to None because
+        # it's not guaranteed the existence of flashcards
         first_flashcard_id = None
         row_flashcard = None
 
         if flashcards_arr != []:
+            # To default if the array of flashcards is not void
+            # I set the first flashcard as selected
             first_flashcard_id = flashcards_arr[0][0]
             row_flashcard = 0
         else:
@@ -117,8 +147,6 @@ def browse_flashcards():
 
     set_sources_array(sources_names)
 
-    flashcards_arr = get_flashcards_array()
-
     right_click_sources = [
         "Sources",
         ["Add source", "Open source", "Change file", "Modify source", "Delete source"],
@@ -130,7 +158,7 @@ def browse_flashcards():
 
     sources_table = sg.Table(
         values=values_table_sources,
-        headings=["id", "Name"],
+        headings=["ID", "Name"],
         key="table_sources",
         enable_click_events=True,
         justification="l",
@@ -149,8 +177,8 @@ def browse_flashcards():
     ]
 
     values_table_flashcards = [[]]
-    if flashcards_arr is not None:
-        values_table_flashcards = flashcards_arr
+    if get_flashcards_array() is not None:
+        values_table_flashcards = get_flashcards_array()
 
     flashcards_table = sg.Table(
         values=values_table_flashcards,
@@ -177,7 +205,7 @@ def browse_flashcards():
     front_default_text = ""
     back_default_text = ""
 
-    if flashcards_arr != []:
+    if get_flashcards_array() != []:
         front_default_text = flashcards_arr[0][1]
         back_default_text = flashcards_arr[0][2]
 
@@ -227,18 +255,12 @@ def browse_flashcards():
     window = sg.Window(
         title="Decks & Flashcards", layout=layout, modal=True, finalize=True
     )
+
     window["front"].bind("<Return>", "_Enter")
     window["back"].bind("<Return>", "_Enter")
     window["front"].bind("<Button-1>", "_LClick")
     window["front"].bind("<Tab>", "_Tab")
     window["back"].bind("<Button-1>", "_LClick")
-
-    if len(sources_names) > 0:
-        set_row_sources(row=0)
-        update_selected_source(window=window, row=0)
-    if len(flashcards_arr) > 0:
-        set_row_flashcards(row=0)
-        update_selected_flashcards(window=window, row=0)
 
     while True:
         event, values = window.read()
@@ -251,18 +273,17 @@ def browse_flashcards():
             if (
                 event[1] == "+CLICKED+"
                 and (event[2][0] is not None and event[2][0] >= 0)
-                and get_sources_array() is not None
+                and get_sources_array() != []
             ):
                 row = event[2][0]
 
+                set_front_input_selected(False)
+                set_back_input_selected(False)
+
                 match event[0]:
                     case "table_sources":
-                        set_row_sources(row=row)
                         update_selected_source(window=window, row=row)
                     case "table_flashcards":
-                        set_front_input_selected(False)
-                        set_back_input_selected(False)
-                        set_row_flashcards(row=row)
                         update_selected_flashcards(window=window, row=row)
 
             ###
@@ -276,14 +297,15 @@ def browse_flashcards():
 
             ### EVENTS FOR FLASHCARD CHANGES
 
-            if event in ["front_Enter", "back_Enter", "saveFlashcard"]:
+            if event in ["front_Enter", "back_Enter", "save_flashcard"]:
                 update_flashcard(
                     flashcard_id=get_selected_flashcard_id(),
                     front=values["front"],
                     back=values["back"],
                 )
+
+                # To change only one flashcards I have to redraw all array.
                 update_flashcards_table(window)
-                update_selected_flashcards(window, get_row_flashcards())
 
             check_input_click(event)
 
@@ -295,14 +317,11 @@ def browse_flashcards():
 
             ###
 
-            ### RIGHT CLICK MENU EVENTS
-
-            ###
-
             ### MENU BAR EVENTS
 
             ## BOOK BAR EVENTS
 
+            ### !!! CONTINUE WITH THE COMMENTS :D -C
             if event in ["Add source", "Modify source"]:
                 if event == "Add source":
                     update_source("NEW")

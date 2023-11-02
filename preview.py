@@ -3,6 +3,9 @@ from functions import from_text_to_elements
 
 
 def preview_card(text_front: str, text_back: str):
+    """
+    It previews the card into a new window.
+    """
     elements_front = from_text_to_elements(text_front)
     elements_back = from_text_to_elements(text_back)
 

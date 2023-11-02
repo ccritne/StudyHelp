@@ -114,13 +114,19 @@ def calculate_deadline(
 
 
 def all_sources_names() -> list:
-    cursor.execute("SELECT DISTINCT id, name FROM sources")
+    """
+    It returns IDs and names of sources.
+    """
+    cursor.execute("SELECT id, name FROM sources")
     result = cursor.fetchall()
 
     return result
 
 
 def get_flashcards_for_table(source_id: int) -> list:
+    """
+    It returns the flashcards of the deck (related to source_id)
+    """
     cursor.execute(
         f"SELECT id, front, back, deadline, box FROM flashcards WHERE source_id = {source_id}"
     )
@@ -450,16 +456,26 @@ def exists_img(img):
 
 
 def check_input_click(event):
+    """
+    Check if I click inner front or back inputText.
+    """
+
     if event == "front_LClick":
         set_back_input_selected(False)
         set_front_input_selected(True)
 
     if event == "back_LClick" or event == "front_Tab":
+        # If I click in back or If I press Tab when i am on front input Text
         set_front_input_selected(False)
         set_back_input_selected(True)
 
 
 def add_latex_to_input_field(window):
+    """
+    It adds [latex][/latex] to string of the selected input field.
+    This allows to elaborate an image with the content of text between the tags.
+    """
+
     key = None
     if get_front_input_selected():
         key = "front"
@@ -471,7 +487,9 @@ def add_latex_to_input_field(window):
         widget = window[key].Widget
         cursor_position = widget.index(INSERT)
         widget.insert(cursor_position, "[latex][/latex]")
-        widget.mark_set(INSERT, f"{cursor_position}+7c")
+        widget.mark_set(
+            INSERT, f"{cursor_position}+7c"
+        )  # I move the cursor between the tag to write the text that will be displayed formatted
 
 
 def save_scheme(flashcardid, filename):
@@ -490,6 +508,12 @@ def save_scheme(flashcardid, filename):
 
 
 def creation_db():
+    """
+    It creates tables inner file 'datas.db' if it is void or some
+    tables are deleted.
+    """
+
+    # Query for table of sources
     SQL_SOURCES = """ CREATE TABLE IF NOT EXISTS sources (
                                     id           INTEGER     NOT NULL
                                                             UNIQUE,
@@ -509,6 +533,7 @@ def creation_db():
     cursor.execute(SQL_SOURCES)
     con.commit()
 
+    # Query for table of flashcards
     SQL_FLASHCARDS = """CREATE TABLE IF NOT EXISTS flashcards (
                                     id             INTEGER     PRIMARY KEY AUTOINCREMENT
                                                             NOT NULL,
@@ -523,6 +548,7 @@ def creation_db():
     cursor.execute(SQL_FLASHCARDS)
     con.commit()
 
+    # Query for table of settings
     SQL_SETTINGS = """CREATE TABLE IF NOT EXISTS settings (
                                     default_hour_notification INTEGER (2) DEFAULT (15) 
                                                                         UNIQUE ON CONFLICT IGNORE,
@@ -537,11 +563,13 @@ def creation_db():
     cursor.execute(SQL_SETTINGS)
     con.commit()
 
+    # Query to insert default value of settings. If the table exists this insert won't be executed
     SQL_SETTINGS_DATA = """INSERT INTO settings(default_hour_notification, max_study_hour, study_days, max_subjects_day) VALUES (15, 8, '0000000', 1);"""
 
     cursor.execute(SQL_SETTINGS_DATA)
     con.commit()
 
+    # Query for table of calendar
     SQL_CALENDAR = """CREATE TABLE IF NOT EXISTS calendar (
                                     id            INTEGER   NOT NULL,
                                     type          TEXT,
@@ -563,18 +591,27 @@ def creation_db():
 
 
 def update_all_deadlines():
+    """
+    It updates all the deadlines of all sources to see on startup the update
+    deadline.
+    """
     cursor.execute("SELECT id, number_pages, studied_pages, arr_sessions FROM sources;")
     sources = cursor.fetchall()
     for x in sources:
-        arr_session_week = ast.literal_eval(x[3])
+        arr_session_week = ast.literal_eval(x[3])  # Converts string to json
         up_deadline = get_string_date(
             calculate_deadline(
                 total_pages=x[1],
                 studied_pages=x[2],
                 arr_session_week=arr_session_week,
+                #
+                #  The next line is useless but in the future will be necessary to determine
+                #  the type of the source (book, video or audio)
+                #
                 is_book=True,
             )
         )
+
         cursor.execute(
             "UPDATE sources SET deadline = ? WHERE id = ?;", (up_deadline, x[0])
         )
@@ -597,6 +634,9 @@ def save_new_flashcard(front, back, filename):
 
 
 def update_flashcard(flashcard_id, front, back):
+    """
+    It updates the data of a specific flashcard of a specific source.
+    """
     cursor.execute(
         "UPDATE flashcards SET front = ?, back = ? WHERE id = ?",
         (front, back, flashcard_id),

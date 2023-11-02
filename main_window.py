@@ -6,6 +6,14 @@ from to_do_list import see_to_do_list
 
 
 def make_main_window():
+    """
+    It creates and display the principal menù with buttons:
+    1. Browse
+    2. Deadlines
+    3. Today session
+    4. To-Do
+    5. Settings
+    """
     menu_layout = [
         [sg.Button("Deck & Flashcards", key="browse_flashcards", size=225)],
         [sg.Button("Check deadlines", key="deadlines", size=225)],
@@ -18,7 +26,7 @@ def make_main_window():
         [
             sg.Table(
                 values=[],
-                headings=["id", "Source Name", "Deadline"],
+                headings=["ID", "Source Name", "Deadline"],
                 hide_vertical_scroll=True,
                 justification="center",
                 select_mode="none",
@@ -29,6 +37,8 @@ def make_main_window():
         [sg.Button("Menu", key="EVENT_MENU_Deadlines", size=225)],
     ]
 
+    # String's value at index i corresponds to decision of the WEEKDAY[I]
+    # to study or rest (0=Rest, 1=Study)
     study_days = get_settings_value("study_days")
 
     settings_layout = [
@@ -59,6 +69,7 @@ def make_main_window():
             ),
         ],
         [sg.Text("Days ")],
+        # The checkboxes's disposition is ugly but it allows to see all days in one window
         [
             sg.Checkbox(
                 text=WEEKDAYS[0],
@@ -115,6 +126,10 @@ def make_main_window():
 
     menu_bar = [["File", "Exit"], ["Help", "About"]]
 
+    # Layout of all layouts.
+    # PySimpleGUI doesn't allow to add dynamically layout or elements so I have to
+    # hide the previous layout and show the next layout to simulate the
+    # effect
     layout = [
         [sg.Menu(menu_bar)],
         [
@@ -135,7 +150,7 @@ def make_main_window():
     ]
 
     window = sg.Window(
-        title="Study Help", layout=layout, size=(300, 400), finalize=True
+        title="Study Help", layout=layout, size=(300, 400), finalize=True, modal=True
     )
 
     while True:
@@ -149,6 +164,7 @@ def make_main_window():
                 from_to("Menu", "Flashcards", window)
 
             if event == "deadlines":
+                # Fill the tables of deadlines
                 sources = cursor.execute(
                     "SELECT id, name, deadline FROM sources"
                 ).fetchall()
@@ -184,6 +200,9 @@ def make_main_window():
 
             if "EVENT_MENU" in event:
                 if "Settings" in event:
+                    # It saves the values of settings.
+                    # It can avoid one query but they are only 4 values so is useless
+                    # and it is better like this
                     max_study_hour = int(values["max_study_hour"])
                     default_hour_notification = int(values["default_hour_notification"])
                     max_subjects_day = int(values["max_subjects_day"])
