@@ -10,15 +10,20 @@ log.basicConfig(
     format="%(name)s - %(levelname)s - %(message)s",
 )
 
+# Defining variables:
 today_index = 0
 pages_left = 0
 days_to_add = 0
 
 
+# ===================== #
+# SUBTRACT PAGES METHOD #
+# ===================== #
 def subtract_pages(
     list_session_week: list,
     index_str: str,
 ):
+    # Inheriting global variables:
     global today_index
     global pages_left
     global days_to_add
