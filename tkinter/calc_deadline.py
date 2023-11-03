@@ -327,4 +327,6 @@ def TestDeadline():
         print(colored("Test. 'Import input' success!", "green"))
 
 
-TestDeadline()
+# ! Example main: ! #
+if __name__ == "__main__":
+    TestDeadline()

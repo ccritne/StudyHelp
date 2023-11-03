@@ -147,6 +147,7 @@ def create_flashcard():
     root.mainloop()
 
 
+# ! example main:
 if __name__ == "__main__":
     # Call the add_card function
     create_flashcard()
