@@ -13,7 +13,8 @@ logging.basicConfig(
 
 def add_card():
     #
-    # ?[Open][@ccritne][wait-answer] QUESTION:
+    # ? [Open][@ccritne][wait-answer]
+    # ? QUESTION:
     # Why have you inserted here this line?
     # I can avoid the insert of the card if
     # I close the window but the log will

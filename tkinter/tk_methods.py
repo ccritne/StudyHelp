@@ -31,10 +31,19 @@ log.basicConfig(
 # ============== #
 def from_to(str_from: str, str_to: str, frame: tk.Frame):
     pass
-    # ? [Open][@marco-secci][wait-answer]
+    # ? [Closed][@marco-secci][to-see]
     # ? QUESTION:
-
+    #
     # What does this method do? I need to know to port it to tk.
+    #
+    # ! ANSWER (@ccritne)
+    # This method allows to hide the old page and show the new page.
+    # `Example:
+    # You are in Menù and you want to go in Settings. To do this you have to
+    # hide the layout of Menù and show the layout of Settings.`
+    # This is an imperative of PySimpleGUI. You can't create or change dynamically a layout
+    # (except text or image). The structure of the window cannot change. If u want
+    # simulate the effect of the change u have to hide and show the elements.
 
 
 # ===================== #
@@ -104,11 +113,15 @@ def exists_filename(filename):
     return is_file
 
 
-# ? [Open][@marco-secci][wait-answer]
+# ? [Closed][@marco-secci][to-see]
 # ? QUESTION:
 #
 # Why do you return the file path above this question,
 # but return just a boolean below this question instead of the image/image path?
+#
+# ! ANSWER (@ccritne)
+# exists_filename and exists_img return boolean.
+# is_file is boolean variable. os.path.isfile(filename) return True if the file exists in local :D
 
 
 # ================= #
