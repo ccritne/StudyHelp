@@ -5,7 +5,7 @@ import io
 from io import BytesIO
 import tkinter as tk
 import matplotlib.pyplot as plt
-from PIL import Image
+from PIL import Image, ImageTk
 import re
 import ast
 import textwrap
@@ -30,11 +30,12 @@ log.basicConfig(
 # FROM TO METHOD #
 # ============== #
 def from_to(str_from: str, str_to: str, frame: tk.Frame):
+    """
+    2023-11-03 12:09 PM @marco-secci: We decided to try to port
+    StudyHelp from PySimpleGUI to TkInterface without the use of this
+    method.
+    """
     pass
-    # ? [Open][@marco-secci][wait-answer]
-    # ? QUESTION:
-
-    # What does this method do? I need to know to port it to tk.
 
 
 # ===================== #
@@ -414,11 +415,10 @@ def render_latex(
         pass  # ? idk if needed (@marco-secci)
 
 
-# ! This will need to be ported to tk (@marco-secci)
 # ============================ #
 # FROM TEXT TO ELEMENTS METHOD #
 # ============================ #
-def from_text_to_elements(text: str):
+def from_text_to_elements(text: str, parent_widget):
     elements = []
     normal_string = ""
 
@@ -426,9 +426,8 @@ def from_text_to_elements(text: str):
     while x < len(text):
         if text[x : x + 7] == "[latex]":
             if normal_string:
-                elements.append(
-                    [sg.Text(text=textwrap.fill(normal_string), expand_x=True)]
-                )
+                wrapped_text = textwrap.fill(normal_string)
+                label = tk.Label(parent_widget, text=wrapped_text, justify=tk.LEFT)
             normal_string = ""
             x += 7
 
@@ -436,8 +435,11 @@ def from_text_to_elements(text: str):
             latex_content = normal_string
             normal_string = ""
             image_bytes = render_latex(latex_content)
-            image_base64 = base64.b64encode(image_bytes)
-            elements.append([sg.Column([[sg.Image(data=image_base64)]])])
+            image = Image.open(io.BytesIO(image_bytes))
+            photo = ImageTk.PhotoImage(image)
+            label = tk.Label(parent_widget, image=photo)
+            label.image = photo
+            elements.append(label)
             x += 8
 
         else:
@@ -445,7 +447,9 @@ def from_text_to_elements(text: str):
             x += 1
 
     if normal_string:
-        elements.append([sg.Text(text=textwrap.fill(normal_string), expand_x=True)])
+        wrapped_text = textwrap.fill(normal_string)
+        label = tk.Label(parent_widget, text=wrapped_text, justify=tk.LEFT)
+        elements.append(label)
 
     return elements
 

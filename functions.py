@@ -35,6 +35,11 @@ def get_actual_page() -> str:
 
 # from to what? -M
 def from_to(str_from: str, str_to: str, window: sg.Window):
+    """
+    2023-11-03 12:09 PM @marco-secci: We decided to try to port
+    StudyHelp from PySimpleGUI to TkInterface without the use of this
+    method.
+    """
     window[str_from].update(visible=False)
     window[str_to].update(visible=True)
     change_previous_page(str_from)
