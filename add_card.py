@@ -1,10 +1,10 @@
 from functions import *
 from preview import preview_card
 from datetime import datetime as dt
-import logging
+import logging as log
 
 # Create log for this script:
-logging.basicConfig(
+log.basicConfig(
     filename="logs/add_card.log",
     filemode="w",
     format="%(name)s - %(levelname)s - %(message)s",
@@ -13,14 +13,23 @@ logging.basicConfig(
 
 def add_card():
     #
-    # ?[Open][@ccritne][wait-answer] QUESTION:
+    # ?[Closed][@ccritne][to-see] QUESTION:
     # Why have you inserted here this line?
     # I can avoid the insert of the card if
     # I close the window but the log will
     # say that a new card it's added.
 
+    # ! ANSWER (@marco-secci)
+    # I did not understand the method quite well
+    # so I thought that, when called,
+    # it creates the card instead of just opening
+    # the window. Maybe renaming
+    # the method could be a good idea?
+    #
+    # Anyway, I changed the log message, lmk if it's ok!
+
     # Logging:
-    logging.info(f"{dt.now}: Card added.")
+    log.info(f"{dt.now}: Flashcard creating window opened.")
 
     layout = [
         [
