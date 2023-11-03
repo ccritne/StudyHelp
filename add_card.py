@@ -12,11 +12,19 @@ logging.basicConfig(
 
 
 def add_card():
+    #
+    # ?[Open][@ccritne][wait-answer] QUESTION:
+    # Why have you inserted here this line?
+    # I can avoid the insert of the card if
+    # I close the window but the log will
+    # say that a new card it's added.
+
     # Logging:
     logging.info(f"{dt.now}: Card added.")
+
     layout = [
         [
-            [sg.Column([[sg.Button("Latex", key="addLatex")]], justification="right")],
+            [sg.Column([[sg.Button("Latex", key="add_latex")]], justification="right")],
             [
                 sg.Text("Front", size=(10, 1)),
                 sg.InputText(key="front", expand_x=True, enable_events=True),
@@ -54,7 +62,7 @@ def add_card():
         if event is not None:
             check_input_click(event)
 
-            if event == "addLatex":
+            if event == "add_latex":
                 add_latex_to_input_field(window)
 
             if event == "save_new_flashcard":
