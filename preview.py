@@ -6,6 +6,7 @@ def preview_card(text_front: str, text_back: str):
     """
     It previews the card into a new window.
     """
+    # Rendering the text in LaTeX format:
     elements_front = from_text_to_elements(text_front)
     elements_back = from_text_to_elements(text_back)
 
