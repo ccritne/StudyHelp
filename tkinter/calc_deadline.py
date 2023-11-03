@@ -1,4 +1,4 @@
-from tk_setup import WEEKDAYS
+from setup import WEEKDAYS
 from datetime import datetime as dt, timedelta as td
 from termcolor import colored
 import logging as log
