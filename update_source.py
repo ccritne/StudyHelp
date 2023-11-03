@@ -38,13 +38,15 @@ def update_deadline(
                         window["preview_deadline"].update(value=up_deadline)
 
                         # Update log:
-                        logging.info(f"The deadline for this book is {up_deadline}. ")
+                        logging.info(
+                            f"{datetime.now()}: The deadline for this book is {up_deadline}. "
+                        )
             else:
                 window["preview_deadline"].update(value="Check values!")
 
     # Register error(s):
     except Exception as e:
-        logging.info(f"An error occurred. {e}")
+        logging.info(f"{datetime.now()}: An error occurred. {e}")
 
 
 def creation_events(

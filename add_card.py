@@ -29,7 +29,7 @@ def add_card():
     # Anyway, I changed the log message, lmk if it's ok!
 
     # Logging:
-    log.info(f"{dt.now}: Flashcard creating window opened.")
+    log.info(f"{dt.now()}: Flashcard creating window opened.")
 
     layout = [
         [
