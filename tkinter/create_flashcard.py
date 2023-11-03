@@ -34,18 +34,18 @@ def create_flashcard():
 
     # Creating the front-input window:
     tk.Label(root, text="Front").grid(row=0, column=0)
-    # Constructing 'Text' widget (multi-line input):
-    front_entry = tk.Text(root)
+    # Constructing 'Entry' widget (single-line input):
+    front_entry = tk.Entry(root)
     front_entry.grid(row=0, column=1, sticky="ew")
 
     # Creating the back-input window:
     tk.Label(root, text="Back").grid(row=1, column=0)
+    # Constructing 'Text' widget (multi-line input):
     back_entry = tk.Text(root, height=8)
     back_entry.grid(row=1, column=1, sticky="ew")
 
     # defining document input:
     tk.Label(root, text="Document").grid(row=2, column=0)
-    # Constructing 'Entry' widget (single-line input):
     filename_entry = tk.Entry(root)
     filename_entry.grid(row=2, column=1, sticky="ew")
 
