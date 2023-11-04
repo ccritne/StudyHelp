@@ -828,6 +828,16 @@ def get_table_deck() -> list:
 # ! ================================================================================= ! #
 
 
+# ========================== #
+# FROM NUMBER TO TIME METHOD #
+# ========================== #
+def from_number_to_time(number: int) -> str:
+    if number < 10:
+        return "0" + str(number)
+
+    return str(number)
+
+
 # ======================== #
 # GET TOTAL MINUTES METHOD #
 # ======================== #
