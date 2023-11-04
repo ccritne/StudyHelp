@@ -5,8 +5,8 @@ from view_diagram import view_diagram
 def today_study_flashcards() -> str:
     state = "OK"
 
-    frontText: list = copy.copy(get_flashcards_array()[0][1])
-    backText: list = copy.copy(get_flashcards_array()[0][2])
+    frontText: list = copy.copy(get_flashcards_list()[0][1])
+    backText: list = copy.copy(get_flashcards_list()[0][2])
 
     set_front_layout(from_text_to_elements(frontText))
     set_back_layout(from_text_to_elements(backText))
@@ -71,7 +71,7 @@ def today_study_flashcards() -> str:
 
         if event is not None:
             if event == "see_diagram":
-                flashcard_id = get_flashcards_array()[0][0]
+                flashcard_id = get_flashcards_list()[0][0]
                 view_diagram(flashcard_id)
 
             if event in ["back_try_input_Enter", "see_solution"]:
@@ -88,19 +88,19 @@ def today_study_flashcards() -> str:
                 window["see_diagram"].update(visible=True)
 
             if event in ["back_zero", "advance_box"]:
-                flashcard_id = get_flashcards_array()[0][0]
+                flashcard_id = get_flashcards_list()[0][0]
 
                 new_box = 0
                 deadline_str = datetime.now().strftime("%Y-%m-%d")
                 if event == "advance_box":
                     deadline_str = (
                         datetime.now()
-                        + timedelta(days=pow(2, get_flashcards_array()[0][3]))
+                        + timedelta(days=pow(2, get_flashcards_list()[0][3]))
                     ).strftime("%Y-%m-%d")
-                    new_box = get_flashcards_array()[0][3] + 1
+                    new_box = get_flashcards_list()[0][3] + 1
                     remove_flashcard(0)
                 else:
-                    retry = get_flashcards_array()[0]
+                    retry = get_flashcards_list()[0]
                     remove_flashcard(0)
                     append_flashcard(retry)
 

@@ -12,8 +12,8 @@ row_flashcards: int | None = None
 
 sources_names: list = []
 flashcards: list = []
-sources_array: list = []
-flashcards_array: list = []
+sources_list: list = []
+flashcards_list: list = []
 table_deck: list = []
 
 played_source_id: int | None = None

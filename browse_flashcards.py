@@ -132,7 +132,7 @@ def browse_flashcards():
         row_flashcard = None
 
         if flashcards_arr != []:
-            # To default if the array of flashcards is not void
+            # To default if the list of flashcards is not void
             # I set the first flashcard as selected
             first_flashcard_id = flashcards_arr[0][0]
             row_flashcard = 0
@@ -304,7 +304,7 @@ def browse_flashcards():
                     back=values["back"],
                 )
 
-                # To change only one flashcards I have to redraw all array.
+                # To change only one flashcards I have to redraw all list.
                 update_flashcards_table(window)
 
             check_input_click(event)

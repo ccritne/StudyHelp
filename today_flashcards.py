@@ -37,9 +37,9 @@ def see_today_sessions():
                     played_source_id
                 )
 
-                set_flashcards_array(today_flashcards_of_source)
+                set_flashcards_list(today_flashcards_of_source)
 
-                while len(get_flashcards_array()) > 0:
+                while len(get_flashcards_list()) > 0:
                     state = today_study_flashcards()
 
                     window["info_decks"].update(values=get_table_deck())
