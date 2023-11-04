@@ -16,7 +16,7 @@ from termcolor import colored
 from calc_deadline import calculate_deadline
 
 # Global variables:
-from tk_setup import *
+from setup import *
 
 # Create log for this script:
 log.basicConfig(

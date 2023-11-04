@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import Toplevel, Label, Scrollbar, Canvas
-from tk_methods import from_text_to_elements
+from methods import from_text_to_elements
 import logging as log
 from datetime import datetime as dt
 

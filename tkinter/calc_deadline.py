@@ -1,4 +1,4 @@
-from tk_setup import WEEKDAYS
+from setup import WEEKDAYS
 from datetime import datetime as dt, timedelta as td
 from termcolor import colored
 import logging as log
@@ -327,4 +327,6 @@ def TestDeadline():
         print(colored("Test. 'Import input' success!", "green"))
 
 
-TestDeadline()
+# ! Example main: ! #
+if __name__ == "__main__":
+    TestDeadline()
