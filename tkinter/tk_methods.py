@@ -96,11 +96,11 @@ def get_settings_value(value: str) -> str | int:
 
 
 # ================== #
-# SAVE SCHEME METHOD #
+# SAVE diagram METHOD #
 # ================== #
-def save_scheme(flashcard_id, filename):
+def save_diagram(flashcard_id, filename):
     cursor.execute(
-        "UPDATE flashcards SET filename_scheme=? WHERE id=?",
+        "UPDATE flashcards SET filename_diagram=? WHERE id=?",
         (filename, flashcard_id),
     )
     con.commit()
@@ -150,11 +150,11 @@ def convert_to_bytes(filename: str, resize: dict | None = None) -> bytes:
             img = img.resize(resize)
         with BytesIO() as bio:
             img.save(bio, format="PNG")
-            log.info(f"{dt.now}: Created the bytes equivalent of {filename}. ")
+            log.info(f"{dt.now()}: Created the bytes equivalent of {filename}. ")
             del img
             return bio.getvalue()
     except Exception as e:
-        log.info(f"{dt.now}: An unexpected ERROR occurred: {e}")
+        log.info(f"{dt.now()}: An unexpected ERROR occurred: {e}")
         return None
 
 
@@ -343,11 +343,11 @@ def save_new_flashcard(front, back, filename):
     box = 0
     deadline = datetime.now().strftime("%Y-%m-%d")
     source_id = get_selected_source_id()
-    filename_scheme = filename
+    filename_diagram = filename
 
     cursor.execute(
-        "INSERT INTO flashcards(front, back, box, deadline, source_id, filename_scheme) VALUES (?, ?, ?, ?, ?, ?)",
-        (text_front, text_back, box, deadline, source_id, filename_scheme),
+        "INSERT INTO flashcards(front, back, box, deadline, source_id, filename_diagram) VALUES (?, ?, ?, ?, ?, ?)",
+        (text_front, text_back, box, deadline, source_id, filename_diagram),
     )
     con.commit()
 
@@ -424,11 +424,11 @@ def render_latex(
 
         # Close the figure and return the image data:
         plt.close(fig)
-        log.info(f"{dt.now}: LaTeX render created successfully. ")
+        log.info(f"{dt.now()}: LaTeX render created successfully. ")
         return buffer.getvalue()
 
     except Exception as e:
-        log.info(f"{dt.now}: An ERROR in the LaTeX rendering occurred: {e}")
+        log.info(f"{dt.now()}: An ERROR in the LaTeX rendering occurred: {e}")
         pass  # ? idk if needed (@marco-secci)
 
 
@@ -553,7 +553,7 @@ def create_db():
                                         deadline       TEXT (10),
                                         box            INTEGER (2) NOT NULL,
                                         sourceid       INTEGER     NOT NULL,
-                                        filename_scheme TEXT
+                                        filename_diagram TEXT
                                     );"""
 
         cursor.execute(SQL_FLASHCARDS)
@@ -600,10 +600,10 @@ def create_db():
         cursor.execute(SQL_CALENDAR)
         con.commit()
         # Logging:
-        log.info(f"{dt.now}: Successfully created database. ")
+        log.info(f"{dt.now()}: Successfully created database. ")
 
     except Exception as e:
-        log.info(f"{dt.now}: There was an ERROR in the creation of the database: {e}")
+        log.info(f"{dt.now()}: There was an ERROR in the creation of the database: {e}")
         pass  # ? idk if needed (@marco-secci)
 
 

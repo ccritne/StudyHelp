@@ -1,21 +1,21 @@
 from functions import *
 
 
-def save_scheme(flashcard_id: int, filename: str):
+def save_diagram(flashcard_id: int, filename: str):
     """
-    ## `save_scheme` method
+    ## `save_diagram` method
 
     ===============================================
 
     #### Description
 
-    It saves the scheme.
+    It saves the diagram.
     """
     exit_message = "EXIT_SUCCESS"
 
     if exists_filename(filename):
         cursor.execute(
-            "UPDATE flashcards SET filename_scheme=? WHERE id=?",
+            "UPDATE flashcards SET filename_diagram=? WHERE id=?",
             (filename, flashcard_id),
         )
         con.commit()
@@ -26,14 +26,14 @@ def save_scheme(flashcard_id: int, filename: str):
     return exit_message
 
 
-def update_scheme(flashcard_id: int) -> (str, str):
+def update_diagram(flashcard_id: int) -> (str, str):
     layout = [
         [sg.Text("Please, select a file", size=(20, 1))],
         [
-            sg.InputText(key="filename_scheme"),
+            sg.InputText(key="filename_diagram"),
             sg.FileBrowse(file_types=(("Image Portable Network Graphics", "*.png"),)),
         ],
-        [sg.Column([[sg.Button("Save", key="save_scheme")]], justification="right")],
+        [sg.Column([[sg.Button("Save", key="save_diagram")]], justification="right")],
     ]
 
     window = sg.Window(
@@ -51,9 +51,9 @@ def update_scheme(flashcard_id: int) -> (str, str):
             exit_message = "EXIT_WINDOW"
             break
 
-        if event == "save_scheme":
-            if "EXIT_SUCCESS" == save_scheme(
-                flashcard_id=flashcard_id, filename=values["filename_scheme"]
+        if event == "save_diagram":
+            if "EXIT_SUCCESS" == save_diagram(
+                flashcard_id=flashcard_id, filename=values["filename_diagram"]
             ):
                 break
 

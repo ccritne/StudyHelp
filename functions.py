@@ -496,9 +496,9 @@ def add_latex_to_input_field(window):
         )  # I move the cursor between the tag to write the text that will be displayed formatted
 
 
-def save_scheme(flashcard_id, filename):
+def save_diagram(flashcard_id, filename):
     cursor.execute(
-        "UPDATE flashcards SET filename_scheme=? WHERE id=?",
+        "UPDATE flashcards SET filename_diagram=? WHERE id=?",
         (filename, flashcard_id),
     )
     con.commit()
@@ -539,7 +539,7 @@ def creation_db():
                                     deadline       TEXT (10),
                                     box            INTEGER (2) NOT NULL,
                                     sourceid       INTEGER     NOT NULL,
-                                    filename_scheme TEXT
+                                    filename_diagram TEXT
                                 );"""
 
     cursor.execute(SQL_FLASHCARDS)
@@ -621,11 +621,11 @@ def save_new_flashcard(front, back, filename):
     box = 0
     deadline = datetime.now().strftime("%Y-%m-%d")
     source_id = get_selected_source_id()
-    filename_scheme = filename
+    filename_diagram = filename
 
     cursor.execute(
-        "INSERT INTO flashcards(front, back, box, deadline, source_id, filename_scheme) VALUES (?, ?, ?, ?, ?, ?)",
-        (text_front, text_back, box, deadline, source_id, filename_scheme),
+        "INSERT INTO flashcards(front, back, box, deadline, source_id, filename_diagram) VALUES (?, ?, ?, ?, ?, ?)",
+        (text_front, text_back, box, deadline, source_id, filename_diagram),
     )
     con.commit()
 

@@ -12,22 +12,6 @@ log.basicConfig(
 
 
 def add_card():
-    #
-    # ?[Closed][@ccritne][to-see] QUESTION:
-    # Why have you inserted here this line?
-    # I can avoid the insert of the card if
-    # I close the window but the log will
-    # say that a new card it's added.
-
-    # ! ANSWER (@marco-secci)
-    # I did not understand the method quite well
-    # so I thought that, when called,
-    # it creates the card instead of just opening
-    # the window. Maybe renaming
-    # the method could be a good idea?
-    #
-    # Anyway, I changed the log message, lmk if it's ok!
-
     # Logging:
     log.info(f"{dt.now()}: Flashcard creating window opened.")
 

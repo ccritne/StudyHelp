@@ -1,5 +1,5 @@
 from functions import *
-from view_scheme import view_scheme
+from view_diagram import view_diagram
 
 
 def today_study_flashcards() -> str:
@@ -48,7 +48,9 @@ def today_study_flashcards() -> str:
         [
             sg.Button("No", key="back_zero", visible=False),
             sg.Button("Yes", key="advance_box", visible=False),
-            sg.Button("Scheme", key="see_scheme", visible=False, button_color="Orange"),
+            sg.Button(
+                "diagram", key="see_diagram", visible=False, button_color="Orange"
+            ),
         ],
         [sg.Button("Back", key="EVENT_BACK_study_layout")],
         [sg.Button("Solution", key="see_solution", button_color="Green")],
@@ -68,9 +70,9 @@ def today_study_flashcards() -> str:
             break
 
         if event is not None:
-            if event == "see_scheme":
+            if event == "see_diagram":
                 flashcard_id = get_flashcards_array()[0][0]
-                view_scheme(flashcard_id)
+                view_diagram(flashcard_id)
 
             if event in ["back_try_input_Enter", "see_solution"]:
                 window["back_try_input"].update(visible=False)
@@ -83,7 +85,7 @@ def today_study_flashcards() -> str:
 
                 window["back_zero"].update(visible=True)
                 window["advance_box"].update(visible=True)
-                window["see_scheme"].update(visible=True)
+                window["see_diagram"].update(visible=True)
 
             if event in ["back_zero", "advance_box"]:
                 flashcard_id = get_flashcards_array()[0][0]
