@@ -1,5 +1,5 @@
 from functions import *
-from view_scheme import view_scheme
+from view_diagram import view_diagram
 from preview import preview_card
 from update_source import update_source
 from add_card import add_card
@@ -11,7 +11,7 @@ def update_flashcards_inputs(window: sg.Window, front: str, back: str):
     """
 
     visible_flashcards_inputs = False
-    if len(get_flashcards_array()) > 0:
+    if len(get_flashcards_list()) > 0:
         visible_flashcards_inputs = True
 
     window["flashcard_inputs"].update(visible=visible_flashcards_inputs)
@@ -25,7 +25,7 @@ def update_selected_source(window: sg.Window, row: int):
     """
 
     source_id = None
-    sources_arr = get_sources_array()
+    sources_arr = get_sources_list()
 
     if row is not None and sources_arr != []:
         source_id = sources_arr[row][0]
@@ -50,7 +50,7 @@ def update_flashcards_table(window: sg.Window):
     if source_id is not None:
         flashcards_arr = get_flashcards_for_table(source_id)
 
-    set_flashcards_array(flashcards_arr)
+    set_flashcards_list(flashcards_arr)
 
     window["table_flashcards"].update(values=flashcards_arr)
 
@@ -58,7 +58,7 @@ def update_flashcards_table(window: sg.Window):
 def update_sources_table(window: sg.Window):
     sources_names = all_sources_names()
 
-    set_sources_array(sources_names)
+    set_sources_list(sources_names)
 
     window["table_sources"].update(values=sources_names)
 
@@ -67,7 +67,7 @@ def update_selected_flashcards(window: sg.Window, row: int):
     """
     It highlights the selected flashcard.
     """
-    flashcards_arr = get_flashcards_array()
+    flashcards_arr = get_flashcards_list()
 
     front = str()
     back = str()
@@ -111,7 +111,7 @@ def browse_flashcards():
     set_selected_flashcard_id(None)
     set_row_flashcards(None)
 
-    set_flashcards_array([])
+    set_flashcards_list([])
 
     if sources_names != []:
         # Exists almost one source
@@ -124,7 +124,7 @@ def browse_flashcards():
         flashcards_arr = get_flashcards_for_table(
             first_source_id
         )  # Gets the flashcards of the first source
-        set_flashcards_array(flashcards_arr)
+        set_flashcards_list(flashcards_arr)
 
         # To default I set the next values to None because
         # it's not guaranteed the existence of flashcards
@@ -132,7 +132,7 @@ def browse_flashcards():
         row_flashcard = None
 
         if flashcards_arr != []:
-            # To default if the array of flashcards is not void
+            # To default if the list of flashcards is not void
             # I set the first flashcard as selected
             first_flashcard_id = flashcards_arr[0][0]
             row_flashcard = 0
@@ -145,7 +145,7 @@ def browse_flashcards():
     else:
         cond_layout_flashcards_visible = False
 
-    set_sources_array(sources_names)
+    set_sources_list(sources_names)
 
     right_click_sources = [
         "Sources",
@@ -177,8 +177,8 @@ def browse_flashcards():
     ]
 
     values_table_flashcards = [[]]
-    if get_flashcards_array() is not None:
-        values_table_flashcards = get_flashcards_array()
+    if get_flashcards_list() is not None:
+        values_table_flashcards = get_flashcards_list()
 
     flashcards_table = sg.Table(
         values=values_table_flashcards,
@@ -205,7 +205,7 @@ def browse_flashcards():
     front_default_text = ""
     back_default_text = ""
 
-    if get_flashcards_array() != []:
+    if get_flashcards_list() != []:
         front_default_text = flashcards_arr[0][1]
         back_default_text = flashcards_arr[0][2]
 
@@ -233,7 +233,7 @@ def browse_flashcards():
         ],
         [
             sg.Button("Save", key="save_flashcard"),
-            sg.Button("View Scheme", key="view_scheme"),
+            sg.Button("View diagram", key="view_diagram"),
             sg.Button("Preview", key="preview_card"),
         ],
     ]
@@ -273,7 +273,7 @@ def browse_flashcards():
             if (
                 event[1] == "+CLICKED+"
                 and (event[2][0] is not None and event[2][0] >= 0)
-                and get_sources_array() != []
+                and get_sources_list() != []
             ):
                 row = event[2][0]
 
@@ -288,10 +288,10 @@ def browse_flashcards():
 
             ###
 
-            ### EVENTS FOR VIEWING AND LOADING SCHEME
+            ### EVENTS FOR VIEWING AND LOADING diagram
 
-            if event == "view_scheme":
-                view_scheme(flashcard_id=get_selected_flashcard_id())
+            if event == "view_diagram":
+                view_diagram(flashcard_id=get_selected_flashcard_id())
 
             ###
 
@@ -304,7 +304,7 @@ def browse_flashcards():
                     back=values["back"],
                 )
 
-                # To change only one flashcards I have to redraw all array.
+                # To change only one flashcards I have to redraw all list.
                 update_flashcards_table(window)
 
             check_input_click(event)
@@ -405,8 +405,8 @@ def browse_flashcards():
             if event == "Add card":
                 add_card()
                 update_flashcards_table(window)
-                update_selected_flashcards(window, len(get_flashcards_array()) - 1)
-                window["table_flashcards"].Widget.see(len(get_flashcards_array()))
+                update_selected_flashcards(window, len(get_flashcards_list()) - 1)
+                window["table_flashcards"].Widget.see(len(get_flashcards_list()))
                 if not cond_layout_flashcards_visible:
                     cond_layout_flashcards_visible = True
 

@@ -3,6 +3,7 @@ from study_slots import *
 from setup import WEEKDAYS
 import logging
 
+
 # Create log for this script:
 logging.basicConfig(
     filename="logs/update_source.log",
@@ -27,13 +28,10 @@ def update_deadline(
                 studied_pages = int(studied_pages_str)
                 if number_pages > 0 and studied_pages >= 0:
                     if study_slots_info is not None:
-                        up_deadline = get_string_date(
-                            calculate_deadline(
-                                is_book=is_book,
-                                arr_session_week=study_slots_info,
-                                total_pages=number_pages,
-                                studied_pages=studied_pages,
-                            )
+                        up_deadline = calculate_deadline(
+                            arr_session_week=study_slots_info,
+                            total_pages=number_pages,
+                            studied_pages=studied_pages,
                         )
                         window["preview_deadline"].update(value=up_deadline)
 
@@ -182,7 +180,7 @@ def update_source(command: str = "NEW"):
     It creates or changes the source.
     """
 
-    # Value of array at index i corresponds to decision of the WEEKDAY[i]
+    # Value of list at index i corresponds to decision of the WEEKDAY[i]
     # to study or rest (0=Rest, 1=Study)
     study_days = [bool(int(x)) for x in get_settings_value("study_days")]
 
@@ -576,3 +574,6 @@ def update_source(command: str = "NEW"):
                             }
 
     window.close()
+
+
+update_source(command="NEW")

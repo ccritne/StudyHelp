@@ -171,14 +171,14 @@ def calculate_deadline(
         deadline += td(days=days_to_add)
 
         # Logging before returning:
-        log.info(f"{dt.now}: Deadline calculated successfully. ")
+        log.info(f"{dt.now()}: Deadline calculated successfully. ")
 
         # Final output will be a datetime object:
         return deadline
 
     except ZeroDivisionError as e:
         # Logging before returning:
-        log.info(f"{dt.now}: An ERROR occurred: {e}")
+        log.info(f"{dt.now()}: An ERROR occurred: {e}")
         return "Insert sessions!"
 
 

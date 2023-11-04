@@ -139,8 +139,8 @@ def preview_flashcard(text_front: str, text_back: str):
 
 if __name__ == "__main__":
     # Replace this with the actual text you want to display:
-    front_text = "This is the front text with [latex]LaTeX content[/latex]."
-    back_text = "This is the back text with [latex]LaTeX content[/latex]."
+    front_text = r"This is the front text with [latex]LaTeX content[/latex]."
+    back_text = r"This is the back text with [latex]\frac{a}{b}[/latex]. "
 
     # Call the preview_card function with the example texts:
     preview_flashcard(front_text, back_text)

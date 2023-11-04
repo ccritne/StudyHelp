@@ -1,6 +1,6 @@
 from functions import *
 from browse_flashcards import browse_flashcards
-from view_scheme import view_scheme
+from view_diagram import view_diagram
 from today_flashcards import see_today_sessions
 from to_do_list import see_to_do_list
 
