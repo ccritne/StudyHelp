@@ -31,7 +31,7 @@ log.basicConfig(
 # ============== #
 def from_to(str_from: str, str_to: str, frame: tk.Frame):
     """
-    2023-11-03 12:09 PM @marco-secci: We decided to try to port
+    2023-11-03 @marco-secci: We decided to try to port
     StudyHelp from PySimpleGUI to TkInterface without the use of this
     method.
     """
