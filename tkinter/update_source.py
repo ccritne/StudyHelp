@@ -11,6 +11,7 @@ You can swap elements.
 If u want go to new row use next_row; 
 if u want put one element next to another use next_column.
 """
+
 # Create log for this script:
 log.basicConfig(
     filename="logs/update_source.log",
